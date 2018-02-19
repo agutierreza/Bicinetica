@@ -62,7 +62,9 @@ public class RealtimeFragment extends Fragment {
     private View.OnClickListener mEndButtonListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            mListener.onActivityReported();
+            if (mListener != null) {
+                mListener.onActivityReported();
+            }
             //TODO
         }
     };
