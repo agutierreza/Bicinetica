@@ -6,6 +6,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
 import bicinetica.com.bicinetica.fragments.RealtimeFragment;
+import bicinetica.com.bicinetica.fragments.RecordFragment;
 
 public class TabsAdapter extends FragmentPagerAdapter {
     private String[] names;
@@ -22,7 +23,15 @@ public class TabsAdapter extends FragmentPagerAdapter {
 
     @Override
     public Fragment getItem(int position) {
-        return new RealtimeFragment();
+        if (position == 0) {
+            return new RealtimeFragment();
+        }
+        else if (position == 1) {
+            return new RecordFragment();
+        }
+        else {
+            throw new RuntimeException();
+        }
     }
 
     @Override
