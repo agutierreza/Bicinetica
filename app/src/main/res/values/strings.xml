@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Bicinetica</string>
+
+    <string name="begin">Begin</string>
+    <string name="end">End</string>
+
+    <string-array name="tab_names">
+        <item>Activity</item>
+        <item>Records</item>
+    </string-array>
 </resources>
