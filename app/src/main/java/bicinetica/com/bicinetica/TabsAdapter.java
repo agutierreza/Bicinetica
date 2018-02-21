@@ -20,7 +20,7 @@ public class TabsAdapter extends FragmentPagerAdapter {
 
     public TabsAdapter(FragmentManager fm , Context context) {
         super(fm);
-        this.mFragmentManager = fm;
+        mFragmentManager = fm;
         mContext = context;
         names = context.getResources().getStringArray(R.array.tab_names);
     }
