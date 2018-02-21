@@ -69,10 +69,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         fusedLocationListener = new LocationPrinterListener(mMap, Color.RED);
         gpsLocationListener = new LocationPrinterListener(mMap, Color.BLUE);
 
-
-        LocationProvider.createProvider(getActivity(), LocationProvider.NETWORK_PROVIDER).registerListener(new LocationPrinterListener(mMap, Color.GREEN));
-
-
         fusedLocationProvider.registerListener(fusedLocationListener);
         gpsLocationProvider.registerListener(gpsLocationListener);
     }
@@ -92,6 +88,7 @@ class LocationPrinterListener implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
+
         points.add(new LatLng(location.getLatitude(), location.getLongitude()));
         if (line != null) {
             line.remove();
