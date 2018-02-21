@@ -11,23 +11,25 @@ import bicinetica.com.bicinetica.fragments.RecordFragment;
 public class TabsAdapter extends FragmentPagerAdapter {
     private String[] names;
 
-    private Context context;
+    private Context mContext;
     private FragmentManager mFragmentManager;
+    private RealtimeFragment mRealtimeFragment;
+    private RecordFragment mRecordFragment;
 
-    public TabsAdapter(FragmentManager fm , Context nContext) {
+    public TabsAdapter(FragmentManager fm , Context context) {
         super(fm);
         this.mFragmentManager = fm;
-        context = nContext;
-        names = nContext.getResources().getStringArray(R.array.tab_names);
+        mContext = context;
+        names = context.getResources().getStringArray(R.array.tab_names);
     }
 
     @Override
     public Fragment getItem(int position) {
         if (position == 0) {
-            return new RealtimeFragment();
+            return getRealtimeFragment();
         }
         else if (position == 1) {
-            return new RecordFragment();
+            return getRecordFragment();
         }
         else {
             throw new RuntimeException();
@@ -42,5 +44,21 @@ public class TabsAdapter extends FragmentPagerAdapter {
     @Override
     public CharSequence getPageTitle(int position) {
         return names[position];
+    }
+
+    private Fragment getRealtimeFragment()
+    {
+        if (mRealtimeFragment == null) {
+            mRealtimeFragment = new RealtimeFragment();
+        }
+        return mRealtimeFragment;
+    }
+
+    private Fragment getRecordFragment()
+    {
+        if (mRecordFragment == null) {
+            mRecordFragment = new RecordFragment();
+        }
+        return mRecordFragment;
     }
 }
