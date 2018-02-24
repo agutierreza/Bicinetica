@@ -1,15 +1,15 @@
 package bicinetica.com.bicinetica.data;
 
 public class Position {
-    private double latitude, longitude, altitude;
+    private float latitude, longitude, altitude;
     private float speed;
     private int seconds;
 
-    public Position(double latitude, double longitude) {
+    public Position(float latitude, float longitude) {
         this(latitude, longitude, 0);
     }
 
-    public Position(double latitude, double longitude, double altitude) {
+    public Position(float latitude, float longitude, float altitude) {
         this.latitude = latitude;
         this.longitude = longitude;
         this.altitude = altitude;
@@ -22,24 +22,24 @@ public class Position {
         this.seconds = seconds;
     }
 
-    public double getLatitude() {
+    public float getLatitude() {
         return latitude;
     }
-    public void setLatitude(double latitude) {
+    public void setLatitude(float latitude) {
         this.latitude = latitude;
     }
 
-    public double getLongitude() {
+    public float getLongitude() {
         return longitude;
     }
-    public void setLongitude(double longitude) {
+    public void setLongitude(float longitude) {
         this.longitude = longitude;
     }
 
-    public double getAltitude() {
+    public float getAltitude() {
         return altitude;
     }
-    public void setAltitude(double altitude) {
+    public void setAltitude(float altitude) {
         this.altitude = altitude;
     }
 
