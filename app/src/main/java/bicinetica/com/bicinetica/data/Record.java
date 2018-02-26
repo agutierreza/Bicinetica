@@ -46,7 +46,7 @@ public class Record {
     }
 
     public void addPosition(Location location) {
-        Position position = new Position(location.getLatitude(), location.getLongitude(), location.getAltitude());
+        Position position = new Position((float)location.getLatitude(), (float)location.getLongitude(), (float)location.getAltitude());
         position.setSpeed(location.getSpeed());
         position.setSeconds((int)((location.getTime() - date.getTime()) / 1000));
         addPosition(position);

@@ -1,6 +1,12 @@
 package bicinetica.com.bicinetica.data;
 
+import bicinetica.com.bicinetica.model.Utilities;
+
 public class Position {
+
+    private static final float geodesica = 40030000;
+    private static final float geodesica_u = geodesica / 360;
+
     private float latitude, longitude, altitude;
     private float speed;
     private int seconds;
@@ -48,5 +54,12 @@ public class Position {
     }
     public void setSpeed(float speed) {
         this.speed = speed;
+    }
+
+    public float getDistance(Position position) {
+        float dLat = (position.getLatitude() - this.getLatitude()) * geodesica_u;
+        float meanLat = Utilities.average(this.getLatitude(), position.getLatitude());
+        float dLon = (float) ((position.getLongitude() - this.getLongitude()) * Math.sin(Math.toRadians(90 - meanLat)) * geodesica_u);
+        return (float) Math.sqrt(Math.pow(dLat, 2) + Math.pow(dLon, 2));
     }
 }
