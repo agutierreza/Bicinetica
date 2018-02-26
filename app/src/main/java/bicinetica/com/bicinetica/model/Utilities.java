@@ -1,5 +1,7 @@
 package bicinetica.com.bicinetica.model;
 
+import java.util.Collection;
+
 public final class Utilities {
 
     public static float[] linealInterpolation(float a, float b, int n){
@@ -16,6 +18,12 @@ public final class Utilities {
             }
         }
         return ar;
+    }
+
+    public static float average(Collection<Float> items) {
+        float res = 0;
+        for (float item : items) res += item;
+        return res / items.size();
     }
 
     public static float average(float... items) {
