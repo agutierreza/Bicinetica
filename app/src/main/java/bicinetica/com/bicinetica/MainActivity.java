@@ -31,23 +31,24 @@ public class MainActivity extends AppCompatActivity {
         TabLayout tabLayout = findViewById(R.id.tabLayout);
         tabLayout.setupWithViewPager(this.mViewPager);
 
-        askForGs();
+        askForPermissions(Manifest.permission.ACCESS_FINE_LOCATION);
+        askForPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE);
     }
 
-    private void askForGs()
+    private void askForPermissions(String permission)
     {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        if (ContextCompat.checkSelfPermission(MainActivity.this, permission) != PackageManager.PERMISSION_GRANTED)
         {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION))
+            if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, permission))
             {
-                Toast.makeText(this, "The application needs explanation", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "The application needs explanation", Toast.LENGTH_LONG).show();
             }
             else
             {
-                Toast.makeText(this, "The aplication doesn't need explanation", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "The aplication doesn't need explanation", Toast.LENGTH_LONG).show();
             }
 
-            ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.ACCESS_FINE_LOCATION }, 0);
+            ActivityCompat.requestPermissions(MainActivity.this, new String[] { permission }, 0);
         }
     }
 }
