@@ -1,6 +1,8 @@
-package bicinetica.com.bicinetica;
+package bicinetica.com.bicinetica.model;
 
 import java.util.Arrays;
+
+import bicinetica.com.bicinetica.data.Position;
 
 public class CyclingOutdoorPower {
     
