@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -20,6 +21,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import java.util.ArrayList;
 
 import bicinetica.com.bicinetica.R;
+import bicinetica.com.bicinetica.data.Record;
 import bicinetica.com.bicinetica.model.LocationListener;
 import bicinetica.com.bicinetica.model.LocationProvider;
 
@@ -33,6 +35,24 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
     private LocationProvider fusedLocationProvider;
     private LocationListener fusedLocationListener;
+
+    private View.OnClickListener beginButtonListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            mMap.clear();
+
+            fusedLocationProvider.registerListener(fusedLocationListener);
+            gpsLocationProvider.registerListener(gpsLocationListener);
+        }
+    };
+    private View.OnClickListener endButtonListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+
+            fusedLocationProvider.unregisterListener(fusedLocationListener);
+            gpsLocationProvider.unregisterListener(gpsLocationListener);
+        }
+    };
 
     public MapFragment() {
     }
@@ -51,6 +71,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         SupportMapFragment mMapFragment = new SupportMapFragment();
         getChildFragmentManager().beginTransaction().add(R.id.map_container, mMapFragment).commit();
         mMapFragment.getMapAsync(this);
+
+        Button buttonBegin = view.findViewById(R.id.begin_map);
+        buttonBegin.setOnClickListener(beginButtonListener);
+        Button buttonEnd = view.findViewById(R.id.end_map);
+        buttonEnd.setOnClickListener(endButtonListener);
+
         return view;
     }
 
@@ -68,9 +94,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
         fusedLocationListener = new LocationPrinterListener(mMap, Color.RED);
         gpsLocationListener = new LocationPrinterListener(mMap, Color.BLUE);
-
-        fusedLocationProvider.registerListener(fusedLocationListener);
-        gpsLocationProvider.registerListener(gpsLocationListener);
     }
 }
 
