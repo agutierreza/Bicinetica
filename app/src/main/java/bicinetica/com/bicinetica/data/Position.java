@@ -28,6 +28,10 @@ public class Position {
         this.seconds = seconds;
     }
 
+    /***
+     * Get the latitude, in degrees.
+     * @return
+     */
     public float getLatitude() {
         return latitude;
     }
@@ -35,6 +39,10 @@ public class Position {
         this.latitude = latitude;
     }
 
+    /***
+     * Get the longitude, in degrees.
+     * @return
+     */
     public float getLongitude() {
         return longitude;
     }
@@ -42,6 +50,10 @@ public class Position {
         this.longitude = longitude;
     }
 
+    /***
+     * Get the altitude if available, in meters above the WGS 84 reference ellipsoid.
+     * @return
+     */
     public float getAltitude() {
         return altitude;
     }
@@ -49,6 +61,10 @@ public class Position {
         this.altitude = altitude;
     }
 
+    /***
+     * Get the speed if it is available, in meters/second over ground.
+     * @return
+     */
     public float getSpeed() {
         return speed;
     }
