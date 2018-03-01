@@ -1,4 +1,4 @@
-package bicinetica.com.bicinetica.model.bluetooth;
+package bicinetica.com.bicinetica.model.bluetooth.characteristics;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 
@@ -48,6 +48,13 @@ public class CscMeasurement {
         float dr = this.wheelRevolutions - csc.wheelRevolutions;
 
         return Math.abs(dr / dt * 60);
+    }
+
+    public float getCadence(CscMeasurement csc) {
+        float dt = this.crankRevolutionsEventTime - csc.crankRevolutionsEventTime;
+        float dr = this.crankRevolutions - csc.crankRevolutions;
+
+        return Math.abs(dr / dt);
     }
 
     @Override

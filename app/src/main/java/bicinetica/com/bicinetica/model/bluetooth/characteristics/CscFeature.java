@@ -1,4 +1,4 @@
-package bicinetica.com.bicinetica.model.bluetooth;
+package bicinetica.com.bicinetica.model.bluetooth.characteristics;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 
