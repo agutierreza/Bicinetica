@@ -12,6 +12,8 @@ import android.content.Context;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import bicinetica.com.bicinetica.model.bluetooth.characteristics.CpMeasurement;
+
 /***
  * Cycling power bluetooth service profile
  */

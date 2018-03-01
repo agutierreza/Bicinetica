@@ -12,6 +12,8 @@ import android.content.Context;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import bicinetica.com.bicinetica.model.bluetooth.characteristics.CscMeasurement;
+
 /***
  * Cycling speed and cadence bluetooth service profile
  */
