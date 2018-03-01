@@ -1,20 +1,21 @@
 package bicinetica.com.bicinetica.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 public final class Utilities {
 
-    public static float[] linealInterpolation(float a, float b, int n){
-        float[] ar = new float[n+1];
+    public static ArrayList<Float> linealInterpolation(float a, float b, int n){
+        ArrayList<Float> ar = new ArrayList<>();
         if (n==1) {
-            ar[0]=a;
-            ar[1]=b;
+            ar.add(a);
+            ar.add(b);
         }
         else {
             //for n nodes divide (n-1) and for until i<n
-            float mesh = (b - a) / (n);
-            for (int i=0; i<=n; i++) {
-                ar[i] = a + mesh * i;
+            float mesh = (b - a) / n;
+            for (int i = 0; i <= n; i++) {
+                ar.add(a + mesh * i);
             }
         }
         return ar;

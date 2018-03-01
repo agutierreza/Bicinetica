@@ -5,6 +5,8 @@ import android.location.Location;
 import java.util.ArrayList;
 import java.util.Date;
 
+import bicinetica.com.bicinetica.model.Utilities;
+
 public class Record {
 
     private int id;
@@ -41,8 +43,26 @@ public class Record {
         return positions;
     }
 
+    public Position getLastPosition() {
+        if (positions.size() == 0) {
+            return null;
+        }
+        else {
+            return positions.get(positions.size() - 1);
+        }
+    }
+
     public void addPosition(Position position) {
-        positions.add(position);
+        Position lastPosition = getLastPosition();
+        if (lastPosition == null) {
+            positions.add(position);
+        }
+        else if (position.getSeconds() - lastPosition.getSeconds() > 1) {
+            positions.addAll(interpolate(lastPosition, position));
+        }
+        else {
+            positions.add(position);
+        }
     }
 
     public void addPosition(Location location) {
@@ -50,5 +70,32 @@ public class Record {
         position.setSpeed(location.getSpeed());
         position.setSeconds((int)((location.getTime() - date.getTime()) / 1000));
         addPosition(position);
+    }
+
+    private static ArrayList<Position> interpolate(Position p1, Position p2) {
+        return interpolate(p1, p2,  p2.getSeconds() - p1.getSeconds());
+    }
+
+    private static ArrayList<Position> interpolate(Position p1, Position p2, int n) {
+
+        ArrayList<Float> latitudeInterpolation = Utilities.linealInterpolation(p1.getLatitude(), p2.getLatitude(), n);
+        ArrayList<Float> longitudeInterpolation = Utilities.linealInterpolation(p1.getLongitude(), p2.getLongitude(), n);
+        ArrayList<Float> altitudeInterpolation = Utilities.linealInterpolation(p1.getAltitude(), p2.getAltitude(), n);
+        ArrayList<Float> speedInterpolation = Utilities.linealInterpolation(p1.getSpeed(), p2.getSpeed(), n);
+
+        int timeOffset = p1.getSeconds();
+
+        ArrayList<Position> res = new ArrayList<>();
+
+        for (int i = 1; i < n; i++) {
+            Position position = new Position(latitudeInterpolation.get(i), longitudeInterpolation.get(i), altitudeInterpolation.get(i));
+            position.setSpeed(speedInterpolation.get(i));
+            position.setSeconds(timeOffset + i);
+            res.add(position);
+        }
+
+        res.add(p2);
+
+        return res;
     }
 }
