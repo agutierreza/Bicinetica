@@ -7,6 +7,24 @@ import java.util.UUID;
 public class CpMeasurement {
     public static final UUID CHARACTERISTIC_UUID = UUID.fromString("00002A63-0000-1000-8000-00805F9B34FB");
 
+    private int instantaneousPower;
+    private float pedalPowerBalance, accumulatedTorque;
+
+    private int wheelRevolutions;
+    private float wheelRevolutionsEventTime;
+
+    private int crankRevolutions;
+    private float crankRevolutionsEventTime;
+
+    int minimumForce, maximumForce;
+    int minimumTorque, maximumTorque;
+    int minimumAngle, maximumAngle;
+
+    int topDeadSpotAngle;
+    int bottomDeadSpotAngle;
+
+    int accumulatedEnergy;
+
     public CpMeasurement() { }
 
     @Override
@@ -27,7 +45,7 @@ public class CpMeasurement {
         return sb.toString();*/
     }
 
-    public static CpMeasurement create(BluetoothGattCharacteristic characteristic) {
+    public static CpMeasurement decode(BluetoothGattCharacteristic characteristic) {
         CpMeasurement res = new CpMeasurement();
 
         int offset = 0;
@@ -35,9 +53,9 @@ public class CpMeasurement {
         int flags = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, offset);
 
         boolean pedalPowerBalancePresent = (flags & 1) == 1;
-        boolean pedalPowerReferencePresent = (flags & 2) == 2;
+        boolean pedalPowerReferencePresent = (flags & 2) == 2; // true = left , false = unkown
         boolean accumulatedTorquePresent = (flags & 4) == 4;
-        boolean accumulatedTorqueSource = (flags & 8) == 8;
+        boolean accumulatedTorqueSource = (flags & 8) == 8; // true = crank based , false = wheel based
         boolean wheelRevolutionDataPresent = (flags & 16) == 16;
         boolean crankRevolutionDataPresent = (flags & 32) == 32;
         boolean extremeForceMagnitudesPresent = (flags & 64) == 64;
@@ -47,8 +65,73 @@ public class CpMeasurement {
         boolean bottomDeadSpotAnglePresent = (flags & 1024) == 1024;
         boolean accumulatedEnergyPresent = (flags & 2048) == 2048;
         boolean offsetCompensationIndicator = (flags & 4096) == 4096;
-
         offset += 2;
+
+        res.instantaneousPower = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_SINT16, offset);
+        offset += 2;
+
+        if (pedalPowerBalancePresent) {
+            res.pedalPowerBalance = characteristic.getFloatValue(BluetoothGattCharacteristic.FORMAT_UINT8, offset) / 2;
+            offset ++;
+        }
+
+        if (accumulatedTorquePresent) {
+            res.accumulatedTorque = characteristic.getFloatValue(BluetoothGattCharacteristic.FORMAT_UINT16, offset) / 32;
+            offset += 2;
+        }
+
+        if (wheelRevolutionDataPresent) {
+            res.wheelRevolutions = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT32, offset);
+            offset += 4;
+            res.wheelRevolutionsEventTime = characteristic.getFloatValue(BluetoothGattCharacteristic.FORMAT_UINT16, offset) / 1024;
+            offset += 2;
+        }
+
+        if (crankRevolutionDataPresent) {
+            res.crankRevolutions = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT32, offset);
+            offset += 4;
+            res.crankRevolutionsEventTime = characteristic.getFloatValue(BluetoothGattCharacteristic.FORMAT_UINT16, offset) / 1024;
+            offset += 2;
+        }
+
+        if (extremeForceMagnitudesPresent) {
+            res.maximumForce = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_SINT16, offset);
+            offset += 2;
+            res.minimumForce = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_SINT16, offset);
+            offset += 2;
+        }
+
+        if (extremeTorqueMagnitudesPresent) {
+            res.maximumTorque = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_SINT16, offset) / 32;
+            offset += 2;
+            res.minimumTorque = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_SINT16, offset) / 32;
+            offset += 2;
+        }
+
+        if (extremeAnglesPresent) {
+            offset += 3;
+
+            //TODO : decode UINT_12 values
+            /*
+            res.maximumTorque = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT12, offset);
+            offset += 1.5;
+            res.minimumTorque = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_SINT12, offset);
+            offset += 1.5;*/
+        }
+
+        if (topDeadSpotAnglePresent) {
+            res.topDeadSpotAngle = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, offset);
+            offset += 2;
+        }
+
+        if (bottomDeadSpotAnglePresent) {
+            res.bottomDeadSpotAngle = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, offset);
+            offset += 2;
+        }
+
+        if (accumulatedEnergyPresent) {
+            res.accumulatedEnergy = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, offset) * 1000;
+        }
 
         return res;
     }

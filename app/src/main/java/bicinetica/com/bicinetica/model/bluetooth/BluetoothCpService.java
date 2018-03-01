@@ -19,13 +19,6 @@ public class BluetoothCpService {
 
     public static final UUID GATT_SERVICE_UUID = UUID.fromString("00001818-0000-1000-8000-00805F9B34FB");
 
-    private static final UUID CLIENT_CHARACTERISTIC_CONFIG = UUID.fromString("00002902-0000-1000-8000-00805F9B34FB");
-
-    //  Other services:
-    //public static final UUID CSC_FEATURE = UUID.fromString("00002A5C-0000-1000-8000-00805F9B34FB");
-    //public static final UUID SENSOR_LOCATION = UUID.fromString("00002A5D-0000-1000-8000-00805F9B34FB");
-    //public static final UUID SC_CONTROL_POINT = UUID.fromString("00002A55-0000-1000-8000-00805F9B34FB");
-
     private ArrayList<BluetoothCpListener> listeners = new ArrayList<>();
     private BluetoothGatt gatt;
 
@@ -62,7 +55,7 @@ public class BluetoothCpService {
             super.onCharacteristicChanged(gatt, characteristic);
 
             if (characteristic.getUuid().equals(CpMeasurement.CHARACTERISTIC_UUID)) {
-                publishResult(CpMeasurement.create(characteristic));
+                publishResult(CpMeasurement.decode(characteristic));
             }
         }
 
@@ -84,7 +77,7 @@ public class BluetoothCpService {
             BluetoothGattCharacteristic csc = service.getCharacteristic(CpMeasurement.CHARACTERISTIC_UUID);
 
             if (gatt.setCharacteristicNotification(csc, true)) {
-                BluetoothGattDescriptor descriptor = csc.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG);
+                BluetoothGattDescriptor descriptor = csc.getDescriptor(GattCommonDescriptors.CLIENT_CHARACTERISTIC_CONFIG);
                 descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
                 gatt.writeDescriptor(descriptor);
             }
