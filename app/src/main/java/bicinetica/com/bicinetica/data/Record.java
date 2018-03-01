@@ -1,9 +1,11 @@
 package bicinetica.com.bicinetica.data;
 
 import android.location.Location;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import bicinetica.com.bicinetica.model.Utilities;
 
@@ -39,7 +41,7 @@ public class Record {
         this.date = date;
     }
 
-    public ArrayList<Position> getPositions() {
+    public List<Position> getPositions() {
         return positions;
     }
 
@@ -50,6 +52,26 @@ public class Record {
         else {
             return positions.get(positions.size() - 1);
         }
+    }
+
+    public List<Position> getLastPositions(int n) {
+        if (positions.size() < n) {
+            throw new RuntimeException();
+        }
+        else {
+            return positions.subList(positions.size() - n, positions.size());
+        }
+    }
+
+    public Position getPreviousPosition(Position position) {
+
+        int i = positions.indexOf(position);
+
+        if (i == -1) {
+            throw new RuntimeException();
+        }
+
+        return positions.get(i - 1);
     }
 
     public void addPosition(Position position) {
@@ -65,11 +87,12 @@ public class Record {
         }
     }
 
-    public void addPosition(Location location) {
+    public Position addPosition(Location location) {
         Position position = new Position((float)location.getLatitude(), (float)location.getLongitude(), (float)location.getAltitude());
         position.setSpeed(location.getSpeed());
         position.setSeconds((int)((location.getTime() - date.getTime()) / 1000));
         addPosition(position);
+        return position;
     }
 
     private static ArrayList<Position> interpolate(Position p1, Position p2) {
