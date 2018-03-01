@@ -45,6 +45,12 @@ public class CpMeasurement {
         return sb.toString();*/
     }
 
+    /**
+     * Decoded as defined in bluetooth docs.
+     * @see <a href="https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.cycling_power_measurement.xml">Bluetooth docs</a>
+     * @param characteristic
+     * @return
+     */
     public static CpMeasurement decode(BluetoothGattCharacteristic characteristic) {
         CpMeasurement res = new CpMeasurement();
 

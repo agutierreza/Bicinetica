@@ -65,6 +65,12 @@ public class CscMeasurement {
         return sb.toString();
     }
 
+    /**
+     * Decoded as defined in bluetooth docs.
+     * @see <a href="https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.csc_measurement.xml">Bluetooth docs</a>
+     * @param characteristic
+     * @return
+     */
     public static CscMeasurement decode(BluetoothGattCharacteristic characteristic) {
         CscMeasurement res = new CscMeasurement();
 
