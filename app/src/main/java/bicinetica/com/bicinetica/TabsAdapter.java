@@ -5,6 +5,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
+import bicinetica.com.bicinetica.fragments.MapFragment;
 import bicinetica.com.bicinetica.fragments.RealtimeFragment;
 import bicinetica.com.bicinetica.fragments.RecordFragment;
 
@@ -15,10 +16,11 @@ public class TabsAdapter extends FragmentPagerAdapter {
     private FragmentManager mFragmentManager;
     private RealtimeFragment mRealtimeFragment;
     private RecordFragment mRecordFragment;
+    private MapFragment mMapFragment;
 
     public TabsAdapter(FragmentManager fm , Context context) {
         super(fm);
-        this.mFragmentManager = fm;
+        mFragmentManager = fm;
         mContext = context;
         names = context.getResources().getStringArray(R.array.tab_names);
     }
@@ -31,6 +33,9 @@ public class TabsAdapter extends FragmentPagerAdapter {
         else if (position == 1) {
             return getRecordFragment();
         }
+        else if (position == 2) {
+            return getMapFragment();
+        }
         else {
             throw new RuntimeException();
         }
@@ -38,7 +43,7 @@ public class TabsAdapter extends FragmentPagerAdapter {
 
     @Override
     public int getCount() {
-        return 2;
+        return names.length;
     }
 
     @Override
@@ -46,19 +51,24 @@ public class TabsAdapter extends FragmentPagerAdapter {
         return names[position];
     }
 
-    private Fragment getRealtimeFragment()
-    {
+    private Fragment getRealtimeFragment() {
         if (mRealtimeFragment == null) {
             mRealtimeFragment = new RealtimeFragment();
         }
         return mRealtimeFragment;
     }
 
-    private Fragment getRecordFragment()
-    {
+    private Fragment getRecordFragment() {
         if (mRecordFragment == null) {
             mRecordFragment = new RecordFragment();
         }
         return mRecordFragment;
+    }
+
+    private Fragment getMapFragment() {
+        if (mMapFragment == null) {
+            mMapFragment = new MapFragment();
+        }
+        return mMapFragment;
     }
 }

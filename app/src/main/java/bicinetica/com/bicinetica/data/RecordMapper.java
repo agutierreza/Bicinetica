@@ -18,6 +18,9 @@ public class RecordMapper {
     }
 
     public static void save(Record record, File file) throws IOException {
+        if (!file.exists()) {
+            file.createNewFile();
+        }
         FileWriter writer = new FileWriter(file);
         save(record, writer);
         writer.close();
@@ -41,7 +44,7 @@ public class RecordMapper {
                         .put("time", position.getSeconds())
                         .put("latitude", position.getLatitude())
                         .put("longitude", position.getLongitude())
-                        .put("altitudes", position.getAltitude())
+                        .put("altitude", position.getAltitude())
                         .put("speed", position.getSpeed());
                 positions.put(positionObject);
             }
