@@ -44,6 +44,10 @@ public class LocationProvider {
         }
         throw new RuntimeException();
     }
+
+    public interface LocationListener {
+        void onLocationChanged(Location location);
+    }
 }
 
 class SystemLocationProvider extends LocationProvider {

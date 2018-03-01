@@ -30,7 +30,6 @@ import java.util.Calendar;
 import bicinetica.com.bicinetica.R;
 import bicinetica.com.bicinetica.data.Record;
 import bicinetica.com.bicinetica.data.RecordMapper;
-import bicinetica.com.bicinetica.model.LocationListener;
 import bicinetica.com.bicinetica.model.LocationProvider;
 
 
@@ -48,7 +47,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     //private LocationProvider fusedLocationProvider;
     //private LocationPrinterListener fusedLocationListener;
 
-    private LocationListener recordListener;
+    private LocationProvider.LocationListener recordListener;
 
     private Button buttonBegin, buttonEnd;
 
@@ -61,7 +60,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             record.setDate(Calendar.getInstance().getTime());
             record.setName("Cycling outdoor");
 
-            recordListener = new LocationListener() {
+            recordListener = new LocationProvider.LocationListener() {
                 @Override
                 public void onLocationChanged(Location location) {
                     record.addPosition(location);
@@ -170,7 +169,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     }
 }
 
-class LocationPrinterListener implements LocationListener {
+class LocationPrinterListener implements LocationProvider.LocationListener {
     private GoogleMap mMap;
     private int mColor;
     private ArrayList<LatLng> points;
