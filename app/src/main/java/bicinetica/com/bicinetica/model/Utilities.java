@@ -40,4 +40,12 @@ public final class Utilities {
         for (Position item : items) res += item.getPower();
         return res / items.size();
     }
+
+    public static float angularVelocity(float rpm) {
+        return (float)(2 * Math.PI * rpm / 60);
+    }
+
+    public static float linealVelocity(float rpm, float radious) {
+        return radious * angularVelocity(rpm);
+    }
 }
