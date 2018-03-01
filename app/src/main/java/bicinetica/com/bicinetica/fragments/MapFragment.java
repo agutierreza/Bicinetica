@@ -91,6 +91,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                 Log.d("MAPPER", ex.getMessage());
             }
 
+            gpsLocationListener.clearPoints();
+
             buttonBegin.setEnabled(true);
             buttonEnd.setEnabled(false);
         }
@@ -130,6 +132,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
         if (gpsLocationListener != null) {
             gpsLocationListener.setAllowPrint(true);
+            gpsLocationListener.printRoute();
         }
     }
 
@@ -187,21 +190,29 @@ class LocationPrinterListener implements LocationListener {
         this.allowPrint = allowPrint;
     }
 
+    public void clearPoints() {
+        points.clear();
+    }
+
     @Override
     public void onLocationChanged(Location location) {
 
         points.add(new LatLng(location.getLatitude(), location.getLongitude()));
 
         if (allowPrint) {
-            if (line != null) {
-                line.remove();
-            }
-
-            PolylineOptions options = new PolylineOptions().width(5).color(mColor).geodesic(true);
-            for (LatLng item : points) {
-                options.add(item);
-            }
-            line = mMap.addPolyline(options);
+            printRoute();
         }
+    }
+
+    public void printRoute() {
+        if (line != null) {
+            line.remove();
+        }
+
+        PolylineOptions options = new PolylineOptions().width(5).color(mColor).geodesic(true);
+        for (LatLng item : points) {
+            options.add(item);
+        }
+        line = mMap.addPolyline(options);
     }
 }

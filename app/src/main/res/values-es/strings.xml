@@ -6,7 +6,7 @@
 
     <string-array name="tab_names">
         <item>Activad</item>
-        <item>Records</item>
+        <item>Registro</item>
         <item>Mapa</item>
     </string-array>
 </resources>
