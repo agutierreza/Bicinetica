@@ -1,7 +1,6 @@
 package bicinetica.com.bicinetica.data;
 
 import android.location.Location;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -46,21 +45,15 @@ public class Record {
     }
 
     public Position getLastPosition() {
-        if (positions.size() == 0) {
-            return null;
-        }
-        else {
-            return positions.get(positions.size() - 1);
-        }
+        return positions.size() == 0 ? null : positions.get(positions.size() - 1);
     }
 
     public List<Position> getLastPositions(int n) {
         if (positions.size() < n) {
             throw new RuntimeException();
         }
-        else {
-            return positions.subList(positions.size() - n, positions.size());
-        }
+
+        return positions.subList(positions.size() - n, positions.size());
     }
 
     public Position getPreviousPosition(Position position) {
