@@ -3,6 +3,8 @@ package bicinetica.com.bicinetica.model;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import bicinetica.com.bicinetica.data.Position;
+
 public final class Utilities {
 
     public static ArrayList<Float> linealInterpolation(float a, float b, int n){
@@ -31,5 +33,11 @@ public final class Utilities {
         float res = 0;
         for (float item : items) res += item;
         return res / items.length;
+    }
+
+    public static float powerAverage(Collection<Position> items) {
+        float res = 0;
+        for (Position item : items) res += item.getPower();
+        return res / items.size();
     }
 }

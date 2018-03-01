@@ -45,7 +45,8 @@ public class RecordMapper {
                         .put("latitude", position.getLatitude())
                         .put("longitude", position.getLongitude())
                         .put("altitude", position.getAltitude())
-                        .put("speed", position.getSpeed());
+                        .put("speed", position.getSpeed())
+                        .put("power", position.getPower());
                 positions.put(positionObject);
             }
             base.put("positions", positions);

@@ -8,7 +8,7 @@ public class Position {
     private static final float geodesica_u = geodesica / 360;
 
     private float latitude, longitude, altitude;
-    private float speed;
+    private float speed, power;
     private int seconds;
 
     public Position(float latitude, float longitude) {
@@ -70,6 +70,18 @@ public class Position {
     }
     public void setSpeed(float speed) {
         this.speed = speed;
+    }
+
+    /***
+     * Get the power if it is available, watts.
+     * @return
+     */
+    public float getPower() {
+        return power;
+    }
+
+    public void setPower(float power) {
+        this.power = power;
     }
 
     public float getDistance(Position position) {
