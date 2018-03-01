@@ -86,11 +86,11 @@ class SystemLocationProvider extends LocationProvider {
 
     @Override
     public void unregisterListener(LocationListener listener) {
-        super.unregisterListener(listener);
         if (mListeners.size() == 0) {
             locationManager.removeUpdates(locationListener);
             listening = false;
         }
+        super.unregisterListener(listener);
     }
 }
 
@@ -138,11 +138,11 @@ class FusedLocationProvider extends LocationProvider {
 
     @Override
     public void unregisterListener(LocationListener listener) {
-        super.unregisterListener(listener);
         if (mListeners.size() == 0) {
             mFusedLocationClient.removeLocationUpdates(mLocationCallback);
             listening = false;
         }
+        super.unregisterListener(listener);
     }
 
     private LocationRequest createLocationRequest() {
