@@ -93,14 +93,14 @@ public class CscMeasurement {
         if (c1) {
             res.wheelRevolutions = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT32, offset);
             offset += 4;
-            res.wheelRevolutionsEventTime = characteristic.getFloatValue(BluetoothGattCharacteristic.FORMAT_UINT16, offset) / 1024;
+            res.wheelRevolutionsEventTime = (float)characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, offset) / 1024;
             offset += 2;
         }
 
         if (c2) {
             res.crankRevolutions = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT32, offset);
             offset += 4;
-            res.crankRevolutionsEventTime = characteristic.getFloatValue(BluetoothGattCharacteristic.FORMAT_UINT16, offset) / 1024;
+            res.crankRevolutionsEventTime = (float)characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, offset) / 1024;
         }
 
         return res;
