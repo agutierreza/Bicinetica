@@ -10,6 +10,8 @@ public class CpMeasurement {
     private int instantaneousPower;
     private float pedalPowerBalance, accumulatedTorque;
 
+    private PowerReference pedalPowerReferencePresent;
+
     private int wheelRevolutions;
     private float wheelRevolutionsEventTime;
 
@@ -29,20 +31,7 @@ public class CpMeasurement {
 
     @Override
     public String toString() {
-
-        return super.toString();
-        /*
-        StringBuilder sb = new StringBuilder();
-        if (wheelRevolutions != 0) {
-            sb.append(String.format("[%s] wheelRevolutions: %s", wheelRevolutionsEventTime, wheelRevolutions));
-        }
-        if (crankRevolutions != 0) {
-            if (sb.length() != 0) {
-                sb.append(" , ");
-            }
-            sb.append(String.format("[%s] crankRevolutions: %s", crankRevolutionsEventTime, crankRevolutions));
-        }
-        return sb.toString();*/
+        return "crankRevolutions = " + crankRevolutions + " , pedalPowerBalance = " + pedalPowerBalance + " , instantaneousPower = " + instantaneousPower + " , pedalPowerReference = " + pedalPowerReferencePresent;
     }
 
     /**
@@ -59,7 +48,7 @@ public class CpMeasurement {
         int flags = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, offset);
 
         boolean pedalPowerBalancePresent = (flags & 1) == 1;
-        boolean pedalPowerReferencePresent = (flags & 2) == 2; // true = left , false = unkown
+        res.pedalPowerReferencePresent = ((flags & 2) == 2) ? PowerReference.Left : PowerReference.Unkown;
         boolean accumulatedTorquePresent = (flags & 4) == 4;
         boolean accumulatedTorqueSource = (flags & 8) == 8; // true = crank based , false = wheel based
         boolean wheelRevolutionDataPresent = (flags & 16) == 16;
@@ -77,26 +66,26 @@ public class CpMeasurement {
         offset += 2;
 
         if (pedalPowerBalancePresent) {
-            res.pedalPowerBalance = characteristic.getFloatValue(BluetoothGattCharacteristic.FORMAT_UINT8, offset) / 2;
+            res.pedalPowerBalance = (float)characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, offset) / 2;
             offset ++;
         }
 
         if (accumulatedTorquePresent) {
-            res.accumulatedTorque = characteristic.getFloatValue(BluetoothGattCharacteristic.FORMAT_UINT16, offset) / 32;
+            res.accumulatedTorque = (float)characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, offset) / 32;
             offset += 2;
         }
 
         if (wheelRevolutionDataPresent) {
             res.wheelRevolutions = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT32, offset);
             offset += 4;
-            res.wheelRevolutionsEventTime = characteristic.getFloatValue(BluetoothGattCharacteristic.FORMAT_UINT16, offset) / 1024;
+            res.wheelRevolutionsEventTime = (float)characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, offset) / 1024;
             offset += 2;
         }
 
         if (crankRevolutionDataPresent) {
-            res.crankRevolutions = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT32, offset);
-            offset += 4;
-            res.crankRevolutionsEventTime = characteristic.getFloatValue(BluetoothGattCharacteristic.FORMAT_UINT16, offset) / 1024;
+            res.crankRevolutions = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, offset);
+            offset += 2;
+            res.crankRevolutionsEventTime = (float)characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, offset) / 1024;
             offset += 2;
         }
 
@@ -140,5 +129,10 @@ public class CpMeasurement {
         }
 
         return res;
+    }
+
+    public enum PowerReference {
+        Left,
+        Unkown
     }
 }
