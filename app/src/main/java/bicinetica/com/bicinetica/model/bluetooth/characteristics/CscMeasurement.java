@@ -4,7 +4,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 
 import java.util.UUID;
 
-public class CscMeasurement {
+public class CscMeasurement extends Characteristic {
     public static final UUID CHARACTERISTIC_UUID = UUID.fromString("00002A5B-0000-1000-8000-00805F9B34FB");
 
     private int wheelRevolutions;
@@ -13,7 +13,9 @@ public class CscMeasurement {
     private int crankRevolutions;
     private float crankRevolutionsEventTime;
 
-    public CscMeasurement() { }
+    private CscMeasurement() {
+        super(CHARACTERISTIC_UUID);
+    }
 
     public int getWheelRevolutions() {
         return wheelRevolutions;

@@ -4,8 +4,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 
 import java.util.UUID;
 
-
-public class CpFeature {
+public class CpFeature extends Characteristic {
 
     public static final UUID CHARACTERISTIC_UUID = UUID.fromString("00002A65-0000-1000-8000-00805F9B34FB");
 
@@ -26,7 +25,9 @@ public class CpFeature {
 
     private DistributedSystemSupport distributedSystemSupport;
 
-    public CpFeature() { }
+    private CpFeature() {
+        super(CHARACTERISTIC_UUID);
+    }
 
     public static CpFeature decode(BluetoothGattCharacteristic characteristic) {
         CpFeature res = new CpFeature();

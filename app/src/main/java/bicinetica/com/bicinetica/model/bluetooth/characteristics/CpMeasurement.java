@@ -4,7 +4,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 
 import java.util.UUID;
 
-public class CpMeasurement {
+public class CpMeasurement extends Characteristic {
     public static final UUID CHARACTERISTIC_UUID = UUID.fromString("00002A63-0000-1000-8000-00805F9B34FB");
 
     private int instantaneousPower;
@@ -27,7 +27,9 @@ public class CpMeasurement {
 
     int accumulatedEnergy;
 
-    public CpMeasurement() { }
+    private CpMeasurement() {
+        super(CHARACTERISTIC_UUID);
+    }
 
     @Override
     public String toString() {
