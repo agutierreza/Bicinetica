@@ -44,12 +44,12 @@ public abstract class BluetoothGattServiceBase {
         listeners.remove(listener);
     }
 
-    public void notificateCharacteristic(UUID characteristic) {
+    public void enableNotifications(UUID characteristic) {
         callback.enableNotifications(characteristic);
     }
 
     public void connect(BluetoothDevice device) {
-        gatt = device.connectGatt(context, true, callback);
+        gatt = device.connectGatt(context, false, callback);
 
         if (gatt == null) {
             Log.i(TAG, "Unable to connect GATT server");

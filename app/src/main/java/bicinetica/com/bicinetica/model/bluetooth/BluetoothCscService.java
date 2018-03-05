@@ -22,7 +22,7 @@ public class BluetoothCscService extends BluetoothGattServiceBase {
 
     public BluetoothCscService(Context context) {
         super(context, SERVICE_UUID);
-        notificateCharacteristic(CscMeasurement.CHARACTERISTIC_UUID);
+        enableNotifications(CscMeasurement.CHARACTERISTIC_UUID);
     }
 
     public BluetoothCscService(Context context, BluetoothDevice device) {
