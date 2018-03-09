@@ -20,6 +20,21 @@ public class Position {
         this.longitude = longitude;
         this.altitude = altitude;
     }
+    
+    public Position(float latitude, float longitude, float altitude, int sec) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.altitude = altitude;
+        this.seconds = sec;
+    }
+    
+    public Position(float latitude, float longitude, float altitude, int sec, float speed) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.altitude = altitude;
+        this.seconds = sec;
+        this.speed = speed;
+    }
 
     public int getSeconds() {
         return seconds;
