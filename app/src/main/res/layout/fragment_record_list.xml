@@ -8,6 +8,7 @@
     android:layout_height="match_parent"
     android:layout_marginLeft="16dp"
     android:layout_marginRight="16dp"
+    android:paddingHorizontal="@dimen/text_margin"
     app:layoutManager="LinearLayoutManager"
     tools:context="bicinetica.com.bicinetica.fragments.RecordFragment"
     tools:listitem="@layout/fragment_record" />
