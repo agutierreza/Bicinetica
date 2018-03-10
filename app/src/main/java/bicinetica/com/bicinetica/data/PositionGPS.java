@@ -1,6 +1,6 @@
-package bicinetica;
+package bicinetica.com.bicinetica.data;
 
-
+import bicinetica.com.bicinetica.model.Utilities;
 
 public class PositionGPS {
 
