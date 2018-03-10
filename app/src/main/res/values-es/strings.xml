@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="begin">Empezar</string>
-    <string name="end">Terminar</string>
+    <string name="start">Empezar</string>
+    <string name="stop">Detener</string>
 
     <string-array name="tab_names">
         <item>Activad</item>

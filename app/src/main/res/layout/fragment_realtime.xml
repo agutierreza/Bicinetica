@@ -13,18 +13,18 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/button_begin"
+            android:id="@+id/button_start"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/begin" />
+            android:text="@string/start" />
 
         <Button
-            android:id="@+id/button_end"
+            android:id="@+id/button_stop"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/end" />
+            android:text="@string/stop" />
     </LinearLayout>
 
     <android.support.constraint.ConstraintLayout

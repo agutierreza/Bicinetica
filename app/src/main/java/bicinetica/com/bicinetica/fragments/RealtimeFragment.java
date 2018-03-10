@@ -39,11 +39,12 @@ public class RealtimeFragment extends Fragment {
     private Record record;
     private List<Location> locations = new ArrayList<>();
 
-    private Button buttonBegin, buttonEnd;
+    private Button buttonStart, buttonStop;
 
     private TextView power3, power5, power10;
     private TextView duration, speed, altitude;
 
+    private boolean visible = false;
     private boolean running = false;
     private long baseTime;
 
@@ -64,22 +65,107 @@ public class RealtimeFragment extends Fragment {
             locations.add(location);
             calculatePower(record.addPosition(location));
 
-            float speedValue = location.getSpeed() * 3.6f;
-            speed.setText(speedValue > 0 ? String.format("%.2f", speedValue) : "--");
-
-            long altitudeValue = Math.round(location.getAltitude());
-            altitude.setText(altitudeValue > 0 ? String.valueOf(altitudeValue) : "--");
-
-            updatePowerMetrics();
+            if (visible) {
+                updateView(location);
+            }
         }
     };
 
-    private void calculatePower(Position position) {
+    private View.OnClickListener startButtonListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            buttonStart.setEnabled(false);
 
-        if (record.getPositions().size() > 1) {
-            Position previousPosition = record.getPreviousPosition(position);
-            position.setPower(CyclingOutdoorPower.calculatePower(previousPosition, position));
+            commandStart();
+
+            buttonStop.setEnabled(true);
         }
+    };
+
+    private View.OnClickListener stopButtonListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            buttonStop.setEnabled(false);
+
+            commandStop();
+
+            buttonStart.setEnabled(true);
+        }
+    };
+
+    public RealtimeFragment() {  }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        durationFormat.setTimeZone(TimeZone.getTimeZone("GTM"));
+
+        locationProvider = LocationProvider.createProvider(getActivity(), LocationProvider.FUSED_PROVIDER);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_realtime, container, false);
+
+        buttonStart = view.findViewById(R.id.button_start);
+        buttonStart.setOnClickListener(startButtonListener);
+        buttonStop = view.findViewById(R.id.button_stop);
+        buttonStop.setOnClickListener(stopButtonListener);
+
+        buttonStop.setEnabled(false);
+
+        duration = view.findViewById(R.id.duration);
+        speed = view.findViewById(R.id.speed);
+        altitude = view.findViewById(R.id.altitude);
+        power3 = view.findViewById(R.id.power_3s);
+        power5 = view.findViewById(R.id.power_5s);
+        power10 = view.findViewById(R.id.power_10s);
+
+        return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        visible = true;
+
+        if (running) {
+            duration.post(tickRunnable);
+            updateView(locations.get(locations.size() - 1));
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        visible = false;
+
+        if (running) {
+            duration.removeCallbacks(tickRunnable);
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+
+        if (running) {
+            this.commandStop();
+        }
+
+        super.onDestroy();
+    }
+
+    private void updateView(Location location) {
+        float speedValue = location.getSpeed() * 3.6f;
+        speed.setText(speedValue > 0 ? String.format("%.2f", speedValue) : "--");
+
+        long altitudeValue = Math.round(location.getAltitude());
+        altitude.setText(altitudeValue > 0 ? String.valueOf(altitudeValue) : "--");
+
+        updatePowerMetrics();
     }
 
     private void updatePowerMetrics() {
@@ -101,83 +187,45 @@ public class RealtimeFragment extends Fragment {
         }
     }
 
-    private View.OnClickListener beginButtonListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            buttonBegin.setEnabled(false);
+    private void calculatePower(Position position) {
 
-            locations.clear();
-
-            record = new Record();
-            record.setDate(Calendar.getInstance().getTime());
-            record.setName("Cycling outdoor");
-
-            locationProvider.registerListener(recordListener);
-
-            running = true;
-            baseTime = SystemClock.elapsedRealtime();
-            duration.postDelayed(tickRunnable, 1000);
-            duration.setText("00:00:00");
-
-            getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
-            buttonEnd.setEnabled(true);
+        if (record.getPositions().size() > 1) {
+            Position previousPosition = record.getPreviousPosition(position);
+            position.setPower(CyclingOutdoorPower.calculatePower(previousPosition, position));
         }
-    };
-
-    private View.OnClickListener endButtonListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            buttonEnd.setEnabled(false);
-
-            running = false;
-            duration.removeCallbacks(tickRunnable);
-
-            locationProvider.unregisterListener(recordListener);
-
-            try {
-                performSave();
-            } catch (IOException ex) {
-                Toast.makeText(getActivity(), ex.getMessage(), Toast.LENGTH_LONG).show();
-                Log.e("MAPPER", ex.getMessage());
-            }
-
-            getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
-            buttonBegin.setEnabled(true);
-        }
-    };
-
-    public RealtimeFragment() {  }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        durationFormat.setTimeZone(TimeZone.getTimeZone("GTM"));
-
-        locationProvider = LocationProvider.createProvider(getActivity(), LocationProvider.FUSED_PROVIDER);
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_realtime, container, false);
+    private void commandStart() {
+        locations.clear();
 
-        buttonBegin = view.findViewById(R.id.button_begin);
-        buttonBegin.setOnClickListener(beginButtonListener);
-        buttonEnd = view.findViewById(R.id.button_end);
-        buttonEnd.setOnClickListener(endButtonListener);
+        record = new Record();
+        record.setDate(Calendar.getInstance().getTime());
+        record.setName("Cycling outdoor");
 
-        buttonEnd.setEnabled(false);
+        locationProvider.registerListener(recordListener);
 
-        duration = view.findViewById(R.id.duration);
-        speed = view.findViewById(R.id.speed);
-        altitude = view.findViewById(R.id.altitude);
-        power3 = view.findViewById(R.id.power_3s);
-        power5 = view.findViewById(R.id.power_5s);
-        power10 = view.findViewById(R.id.power_10s);
+        running = true;
+        baseTime = SystemClock.elapsedRealtime();
+        duration.postDelayed(tickRunnable, 1000);
+        duration.setText("00:00:00");
 
-        return view;
+        getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    private void commandStop() {
+        running = false;
+        duration.removeCallbacks(tickRunnable);
+
+        locationProvider.unregisterListener(recordListener);
+
+        try {
+            performSave();
+        } catch (IOException ex) {
+            Toast.makeText(getActivity(), ex.getMessage(), Toast.LENGTH_LONG).show();
+            Log.e("MAPPER", ex.getMessage());
+        }
+
+        getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     private void performSave() throws IOException {
