@@ -9,7 +9,7 @@ public class Position {
 
     private float latitude, longitude, altitude;
     private float speed, power;
-    private int seconds;
+    private long timestamp;
 
     public Position(float latitude, float longitude) {
         this(latitude, longitude, 0);
@@ -23,19 +23,19 @@ public class Position {
         this(latitude, longitude, altitude, speed, 0);
     }
     
-    public Position(float latitude, float longitude, float altitude, float speed, int seconds) {
+    public Position(float latitude, float longitude, float altitude, float speed, long timestamp) {
         this.latitude = latitude;
         this.longitude = longitude;
         this.altitude = altitude;
-        this.seconds = seconds;
+        this.timestamp = timestamp;
         this.speed = speed;
     }
 
-    public int getSeconds() {
-        return seconds;
+    public long getTimestamp() {
+        return timestamp;
     }
-    public void setSeconds(int seconds) {
-        this.seconds = seconds;
+    public void setTimestamp(long seconds) {
+        this.timestamp = seconds;
     }
 
     /***

@@ -1,6 +1,7 @@
 package bicinetica.com.bicinetica.data;
 
 import android.location.Location;
+import android.os.Bundle;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -60,7 +61,7 @@ public class RecordMapper {
             JSONArray positions = new JSONArray();
             for (Position position : record.getPositions()) {
                 positions.put(new JSONObject()
-                        .put("time", position.getSeconds())
+                        .put("time", position.getTimestamp())
                         .put("latitude", position.getLatitude())
                         .put("longitude", position.getLongitude())
                         .put("altitude", position.getAltitude())
@@ -90,7 +91,7 @@ public class RecordMapper {
             JSONArray positions = new JSONArray();
             for (Location location : locations) {
                 positions.put(new JSONObject()
-                        .put("time", location.getTime())
+                        .put("time", location.getTime() - baseLocation.getTime())
                         .put("speed", location.getSpeed())
                         .put("location", new JSONObject()
                                 .put("longitude", location.getLongitude())
