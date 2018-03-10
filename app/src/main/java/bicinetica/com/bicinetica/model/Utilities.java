@@ -47,51 +47,49 @@ public final class Utilities {
     	}
     	return Math.round((float)bestSum / seg);
     }
-    
+
     public static ArrayList<Position> interpola(PositionGPS p1, PositionGPS p2) {
-    	ArrayList<Position> positions = new ArrayList<>();
-    	
-    	//The number of Positions that we are going to add
-    	int numPositions = (p2.getSeconds() - (int)p2.getSeconds() == 0) ?
+        ArrayList<Position> positions = new ArrayList<>();
+
+        //The number of Positions that we are going to add
+        int numPositions = (p2.getSeconds() - (int)p2.getSeconds() == 0) ?
                 (int)p2.getSeconds() - (int)p1.getSeconds() + 1 : //This never happens anyway!
                 (int)p2.getSeconds() - (int)p1.getSeconds() + 2;
-    	//numPositions = (int)p2.getSeconds() - (int)p1.getSeconds() + 2;
-    	
-    	//line parameters for Lat,Lon,Alt, speed
-    	float modLat, modLon, modAlt, modSpd, bLat, bLon, bAlt, bSpd;
-    	float duration = p2.getSeconds()-p1.getSeconds();
-    	
-    	modLat = (p2.getLatitude() - p1.getLatitude()) / duration;
-    	modLon = (p2.getLongitude() - p1.getLongitude()) / duration;
-    	modAlt = (p2.getAltitude() - p1.getAltitude()) / duration;
-    	modSpd = (p2.getSpeed() - p1.getSpeed()) / duration;
-    	
-    	bLat = p1.getLatitude() - modLat * p1.getSeconds();
-    	bLon = p1.getLongitude() - modLon * p1.getSeconds();
-    	bAlt = p1.getAltitude() - modAlt * p1.getSeconds();
-    	bSpd = p1.getSpeed() - modSpd * p1.getSpeed();
-    	
-    	//First point using parameters
-    	int seconds= (int) p1.getSeconds();
-    	float lat, lon, alt, spd;
-    	lat = modLat * seconds + bLat;
-    	lon = modLon * seconds + bLon;
-    	alt = modAlt * seconds + bAlt;
-    	spd = modSpd * seconds + bSpd;
-    	Position p = new Position(lat, lon, alt, spd, seconds);
-    	positions.add(p);
-    	
-    	//Adding the rest from the slope module :)
-    	for (int i = 1; i < numPositions; i++) {
-    		lat += modLat;
-    		lon += modLon;
-    		alt += modAlt;
-    		spd += modSpd;
-    		seconds++;
-    		positions.add(new Position(lat, lon, alt, spd, seconds));
-    	}
-    	
-    	return positions;
+        //numPositions = (int)p2.getSeconds() - (int)p1.getSeconds() + 2;
+
+        //line parameters for Lat,Lon,Alt, speed
+        float duration = p2.getSeconds()-p1.getSeconds();
+
+        float modLat = (p2.getLatitude() - p1.getLatitude()) / duration;
+        float modLon = (p2.getLongitude() - p1.getLongitude()) / duration;
+        float modAlt = (p2.getAltitude() - p1.getAltitude()) / duration;
+        float modSpd = (p2.getSpeed() - p1.getSpeed()) / duration;
+
+        float bLat = p1.getLatitude() - modLat * p1.getSeconds();
+        float bLon = p1.getLongitude() - modLon * p1.getSeconds();
+        float bAlt = p1.getAltitude() - modAlt * p1.getSeconds();
+        float bSpd = p1.getSpeed() - modSpd * p1.getSpeed();
+
+        //First point using parameters
+        int seconds = (int)p1.getSeconds();
+        float lat = modLat * seconds + bLat;
+        float lon = modLon * seconds + bLon;
+        float alt = modAlt * seconds + bAlt;
+        float spd = modSpd * seconds + bSpd;
+        Position p = new Position(lat, lon, alt, spd, seconds);
+        positions.add(p);
+
+        //Adding the rest from the slope module :)
+        for (int i = 1; i < numPositions; i++) {
+            lat += modLat;
+            lon += modLon;
+            alt += modAlt;
+            spd += modSpd;
+            seconds++;
+            positions.add(new Position(lat, lon, alt, spd, seconds));
+        }
+
+        return positions;
     }
 
     public static Function<Integer, Position> createInterpolation(final Position p1, final Position p2) {
