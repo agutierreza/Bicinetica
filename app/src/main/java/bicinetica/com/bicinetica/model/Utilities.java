@@ -26,26 +26,26 @@ public final class Utilities {
         for (Position item : items) res += item.getPower();
         return res / items.size();
     }
-    
+
     /**
      * Gives the best average @seg seconds for powerList
-     * 
+     *
      * @param powerList List of activity power, second by second
      * @param seg The number of seconds to get the best average of
      */
     public static int cpseg(List<Integer> powerList, int seg) {
-    	int sum = 0, bestSum = 0;
-    	for (int i = 0; i < seg; i++) {
-    		sum += powerList.get(i);
-    	}
-    	bestSum = sum;
-    	for (int i = seg; i < powerList.size(); i++) {
-    		sum += powerList.get(i) - powerList.get(i-seg);
-    		if (sum > bestSum) {
-    			bestSum = sum;
-    		}
-    	}
-    	return Math.round((float)bestSum / seg);
+        int sum = 0, bestSum = 0;
+        for (int i = 0; i < seg; i++) {
+            sum += powerList.get(i);
+        }
+        bestSum = sum;
+        for (int i = seg; i < powerList.size(); i++) {
+            sum += powerList.get(i) - powerList.get(i-seg);
+            if (sum > bestSum) {
+                bestSum = sum;
+            }
+        }
+        return Math.round((float)bestSum / seg);
     }
 
     public static ArrayList<Position> interpola(PositionGPS p1, PositionGPS p2) {
@@ -95,16 +95,16 @@ public final class Utilities {
     public static Function<Integer, Position> createInterpolation(final Position p1, final Position p2) {
         return new Function<Integer, Position>() {
 
-            Interpolator latitude = new Interpolator(
+            InterpolatorInt latitude = new InterpolatorInt(
                     p1.getSeconds(), p1.getLatitude(),
                     p2.getSeconds(), p2.getLatitude());
-            Interpolator longitude = new Interpolator(
+            InterpolatorInt longitude = new InterpolatorInt(
                     p1.getSeconds(), p1.getLongitude(),
                     p2.getSeconds(), p2.getLongitude());
-            Interpolator altitude = new Interpolator(
+            InterpolatorInt altitude = new InterpolatorInt(
                     p1.getSeconds(), p1.getAltitude(),
                     p2.getSeconds(), p2.getAltitude());
-            Interpolator speed = new Interpolator(
+            InterpolatorInt speed = new InterpolatorInt(
                     p1.getSeconds(), p1.getSpeed(),
                     p2.getSeconds(), p2.getSpeed());
 
@@ -120,13 +120,41 @@ public final class Utilities {
         };
     }
 
+    public static Function<Float, PositionGPS> createInterpolation(final PositionGPS p1, final PositionGPS p2) {
+        return new Function<Float, PositionGPS>() {
+
+            InterpolatorFloat latitude = new InterpolatorFloat(
+                    p1.getSeconds(), p1.getLatitude(),
+                    p2.getSeconds(), p2.getLatitude());
+            InterpolatorFloat longitude = new InterpolatorFloat(
+                    p1.getSeconds(), p1.getLongitude(),
+                    p2.getSeconds(), p2.getLongitude());
+            InterpolatorFloat altitude = new InterpolatorFloat(
+                    p1.getSeconds(), p1.getAltitude(),
+                    p2.getSeconds(), p2.getAltitude());
+            InterpolatorFloat speed = new InterpolatorFloat(
+                    p1.getSeconds(), p1.getSpeed(),
+                    p2.getSeconds(), p2.getSpeed());
+
+            @Override
+            public PositionGPS apply(Float seconds) {
+
+                return new PositionGPS(latitude.apply(seconds),
+                        longitude.apply(seconds),
+                        altitude.apply(seconds),
+                        speed.apply(seconds),
+                        seconds);
+            }
+        };
+    }
+
 }
 
-class Interpolator implements Function<Integer, Float> {
+class InterpolatorInt implements Function<Integer, Float> {
 
     private float m, n;
 
-    public Interpolator(int x1, float y1, int x2, float y2) {
+    public InterpolatorInt(int x1, float y1, int x2, float y2) {
         if (x1 >= x2) throw new IllegalArgumentException();
 
         m = (y2 - y1) / (x2 - x1);
@@ -135,6 +163,23 @@ class Interpolator implements Function<Integer, Float> {
 
     @Override
     public Float apply(Integer value) {
+        return m * value + n;
+    }
+}
+
+class InterpolatorFloat implements Function<Float, Float> {
+
+    private float m, n;
+
+    public InterpolatorFloat(float x1, float y1, float x2, float y2) {
+        if (x1 >= x2) throw new IllegalArgumentException();
+
+        m = (y2 - y1) / (x2 - x1);
+        n = y1 - m * x1;
+    }
+
+    @Override
+    public Float apply(Float value) {
         return m * value + n;
     }
 }

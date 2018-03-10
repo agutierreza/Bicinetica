@@ -16,9 +16,19 @@ public class PositionGPS {
     }
 
     public PositionGPS(float latitude, float longitude, float altitude) {
+        this(latitude, longitude, altitude, 0);
+    }
+
+    public PositionGPS(float latitude, float longitude, float altitude, float speed) {
+        this(latitude, longitude, altitude, speed, 0);
+    }
+
+    public PositionGPS(float latitude, float longitude, float altitude, float speed, float seconds) {
         this.latitude = latitude;
         this.longitude = longitude;
         this.altitude = altitude;
+        this.seconds = seconds;
+        this.speed = speed;
     }
 
     public float getSeconds() {
@@ -89,5 +99,24 @@ public class PositionGPS {
         float meanLat = Utilities.average(this.getLatitude(), position.getLatitude());
         float dLon = (float) ((position.getLongitude() - this.getLongitude()) * Math.sin(Math.toRadians(90 - meanLat)) * geodesica_u);
         return (float) Math.sqrt(Math.pow(dLat, 2) + Math.pow(dLon, 2));
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof PositionGPS) {
+            return this.equals((PositionGPS)obj);
+        }
+        else {
+            return false;
+        }
+    }
+
+    public boolean equals(PositionGPS other) {
+        return this.altitude == other.altitude &&
+                this.latitude == other.latitude &&
+                this.longitude == other.longitude &&
+                this.speed == other.speed &&
+                this.seconds == other.seconds &&
+                this.power == other.power;
     }
 }

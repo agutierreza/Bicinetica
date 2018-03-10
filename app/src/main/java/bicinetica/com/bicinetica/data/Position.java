@@ -100,4 +100,23 @@ public class Position {
         float dLon = (float) ((position.getLongitude() - this.getLongitude()) * Math.sin(Math.toRadians(90 - meanLat)) * geodesica_u);
         return (float) Math.sqrt(Math.pow(dLat, 2) + Math.pow(dLon, 2));
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Position) {
+            return this.equals((Position)obj);
+        }
+        else {
+            return false;
+        }
+    }
+
+    public boolean equals(Position other) {
+        return this.altitude == other.altitude &&
+                this.latitude == other.latitude &&
+                this.longitude == other.longitude &&
+                this.speed == other.speed &&
+                this.seconds == other.seconds &&
+                this.power == other.power;
+    }
 }
