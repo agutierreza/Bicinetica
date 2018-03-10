@@ -6,11 +6,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import bicinetica.com.bicinetica.model.Utilities;
-
 public class Record {
 
-    private int id;
     private String name;
     private Date date;
     private ArrayList<Position> positions;
@@ -26,13 +23,6 @@ public class Record {
         this.name = name;
     }
 
-    public int getId() {
-        return id;
-    }
-    public void setId(int id)  {
-        this.id = id;
-    }
-
     public Date getDate() {
         return date;
     }
@@ -45,7 +35,7 @@ public class Record {
     }
 
     public Position getLastPosition() {
-        return positions.size() == 0 ? null : positions.get(positions.size() - 1);
+        return positions.isEmpty() ? null : positions.get(positions.size() - 1);
     }
 
     public List<Position> getLastPositions(int n) {
@@ -57,7 +47,6 @@ public class Record {
     }
 
     public Position getPreviousPosition(Position position) {
-
         int i = positions.indexOf(position);
 
         if (i == -1) {
@@ -68,50 +57,29 @@ public class Record {
     }
 
     public void addPosition(Position position) {
+        positions.add(position);
+        /*
         Position lastPosition = getLastPosition();
         if (lastPosition == null) {
             positions.add(position);
         }
-        else if (position.getSeconds() - lastPosition.getSeconds() > 1) {
-            positions.addAll(interpolate(lastPosition, position));
+        else if (position.getTimestamp() - lastPosition.getTimestamp() > 1000) {
+            // TODO: Interpolate
         }
         else {
             positions.add(position);
         }
+        */
     }
 
     public Position addPosition(Location location) {
+        if (this.positions.isEmpty()) {
+            this.date = new Date(location.getTime());
+        }
         Position position = new Position((float)location.getLatitude(), (float)location.getLongitude(), (float)location.getAltitude());
         position.setSpeed(location.getSpeed());
-        position.setSeconds((int)((location.getTime() - date.getTime()) / 1000));
+        position.setTimestamp(location.getTime() - date.getTime());
         addPosition(position);
         return position;
-    }
-
-    private static ArrayList<Position> interpolate(Position p1, Position p2) {
-        return interpolate(p1, p2,  p2.getSeconds() - p1.getSeconds());
-    }
-
-    private static ArrayList<Position> interpolate(Position p1, Position p2, int n) {
-
-        ArrayList<Float> latitudeInterpolation = Utilities.linealInterpolation(p1.getLatitude(), p2.getLatitude(), n);
-        ArrayList<Float> longitudeInterpolation = Utilities.linealInterpolation(p1.getLongitude(), p2.getLongitude(), n);
-        ArrayList<Float> altitudeInterpolation = Utilities.linealInterpolation(p1.getAltitude(), p2.getAltitude(), n);
-        ArrayList<Float> speedInterpolation = Utilities.linealInterpolation(p1.getSpeed(), p2.getSpeed(), n);
-
-        int timeOffset = p1.getSeconds();
-
-        ArrayList<Position> res = new ArrayList<>();
-
-        for (int i = 1; i < n; i++) {
-            Position position = new Position(latitudeInterpolation.get(i), longitudeInterpolation.get(i), altitudeInterpolation.get(i));
-            position.setSpeed(speedInterpolation.get(i));
-            position.setSeconds(timeOffset + i);
-            res.add(position);
-        }
-
-        res.add(p2);
-
-        return res;
     }
 }

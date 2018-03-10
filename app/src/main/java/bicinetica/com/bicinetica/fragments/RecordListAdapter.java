@@ -37,7 +37,6 @@ public class RecordListAdapter extends RecyclerView.Adapter<RecordListAdapter.Re
     @Override
     public void onBindViewHolder(final RecordViewHolder holder, int position) {
 
-        holder.mIdView.setText(String.valueOf(mValues.get(position).getId()));
         holder.mContentView.setText(mValues.get(position).getName());
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
@@ -59,14 +58,12 @@ public class RecordListAdapter extends RecyclerView.Adapter<RecordListAdapter.Re
 
     public class RecordViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
-        public final TextView mIdView;
         public final TextView mContentView;
         public Record mItem;
 
         public RecordViewHolder(View view) {
             super(view);
             mView = view;
-            mIdView = view.findViewById(R.id.id);
             mContentView = view.findViewById(R.id.content);
         }
     }

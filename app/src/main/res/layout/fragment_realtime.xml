@@ -1,113 +1,107 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context="bicinetica.com.bicinetica.fragments.RealtimeFragment">
 
-    <!-- TODO: Update blank fragment layout -->
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <Button
+            android:id="@+id/button_begin"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_weight="1"
+            android:text="@string/begin" />
 
-            <Button
-                android:id="@+id/button_begin"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/begin" />
-
-            <Button
-                android:id="@+id/button_end"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/end" />
-        </LinearLayout>
-
-        <TableLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <TextView
-                    android:layout_width="107dp"
-                    android:layout_height="wrap_content"
-                    android:text="Max P"
-                    android:textSize="@dimen/power_text" />
-
-                <TextView
-                    android:id="@+id/power_max"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="0 W"
-                    android:textSize="@dimen/power_text" />
-            </TableRow>
-
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" >
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="P3s"
-                    android:textSize="@dimen/power_text" />
-
-                <TextView
-                    android:id="@+id/power_3_s"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="0 W"
-                    android:textSize="@dimen/power_text" />
-            </TableRow>
-
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" >
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="P5s"
-                    android:textSize="@dimen/power_text" />
-
-                <TextView
-                    android:id="@+id/power_5_s"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="0 W"
-                    android:textSize="@dimen/power_text" />
-            </TableRow>
-
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" >
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="P10s"
-                    android:textSize="@dimen/power_text" />
-
-                <TextView
-                    android:id="@+id/power_10_s"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="0 W"
-                    android:textSize="@dimen/power_text" />
-            </TableRow>
-
-        </TableLayout>
-
+        <Button
+            android:id="@+id/button_end"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/end" />
     </LinearLayout>
-</FrameLayout>
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:layout_width="107dp"
+                android:layout_height="wrap_content"
+                android:text="Max P"
+                android:textSize="@dimen/power_text" />
+
+            <TextView
+                android:id="@+id/power_max"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0 W"
+                android:textSize="@dimen/power_text" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="P3s"
+                android:textSize="@dimen/power_text" />
+
+            <TextView
+                android:id="@+id/power_3_s"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0 W"
+                android:textSize="@dimen/power_text" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="P5s"
+                android:textSize="@dimen/power_text" />
+
+            <TextView
+                android:id="@+id/power_5_s"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0 W"
+                android:textSize="@dimen/power_text" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="P10s"
+                android:textSize="@dimen/power_text" />
+
+            <TextView
+                android:id="@+id/power_10_s"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0 W"
+                android:textSize="@dimen/power_text" />
+        </TableRow>
+
+    </TableLayout>
+
+</LinearLayout>

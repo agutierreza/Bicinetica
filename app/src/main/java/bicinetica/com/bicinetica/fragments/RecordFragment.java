@@ -3,6 +3,7 @@ package bicinetica.com.bicinetica.fragments;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -40,27 +41,26 @@ public class RecordFragment extends Fragment {
             ArrayList<Record> items = new ArrayList<>();
 
             Record r = new Record();
-            r.setId(1);
             r.setName("Running indoor");
             items.add(r);
 
             r = new Record();
-            r.setId(2);
             r.setName("Running outdoor");
             items.add(r);
 
             r = new Record();
-            r.setId(3);
             r.setName("Cycling indoor");
             items.add(r);
 
             r = new Record();
-            r.setId(4);
             r.setName("Cycling outdoor");
             items.add(r);
 
             recyclerView.setAdapter(new RecordListAdapter(items));
+            recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL));
         }
+
+
         return view;
     }
 

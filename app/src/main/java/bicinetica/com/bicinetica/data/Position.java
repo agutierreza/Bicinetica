@@ -9,23 +9,33 @@ public class Position {
 
     private float latitude, longitude, altitude;
     private float speed, power;
-    private int seconds;
+    private long timestamp;
 
     public Position(float latitude, float longitude) {
         this(latitude, longitude, 0);
     }
 
     public Position(float latitude, float longitude, float altitude) {
+        this(latitude, longitude, altitude, 0);
+    }
+    
+    public Position(float latitude, float longitude, float altitude, float speed) {
+        this(latitude, longitude, altitude, speed, 0);
+    }
+    
+    public Position(float latitude, float longitude, float altitude, float speed, long timestamp) {
         this.latitude = latitude;
         this.longitude = longitude;
         this.altitude = altitude;
+        this.timestamp = timestamp;
+        this.speed = speed;
     }
 
-    public int getSeconds() {
-        return seconds;
+    public long getTimestamp() {
+        return timestamp;
     }
-    public void setSeconds(int seconds) {
-        this.seconds = seconds;
+    public void setTimestamp(long seconds) {
+        this.timestamp = seconds;
     }
 
     /***
@@ -89,5 +99,24 @@ public class Position {
         float meanLat = Utilities.average(this.getLatitude(), position.getLatitude());
         float dLon = (float) ((position.getLongitude() - this.getLongitude()) * Math.sin(Math.toRadians(90 - meanLat)) * geodesica_u);
         return (float) Math.sqrt(Math.pow(dLat, 2) + Math.pow(dLon, 2));
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Position) {
+            return this.equals((Position)obj);
+        }
+        else {
+            return false;
+        }
+    }
+
+    public boolean equals(Position other) {
+        return this.altitude == other.altitude &&
+                this.latitude == other.latitude &&
+                this.longitude == other.longitude &&
+                this.speed == other.speed &&
+                this.timestamp == other.timestamp &&
+                this.power == other.power;
     }
 }
