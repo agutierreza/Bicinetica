@@ -6,9 +6,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import bicinetica.com.bicinetica.model.Function;
-import bicinetica.com.bicinetica.model.Utilities;
-
 public class Record {
 
     private int id;
@@ -46,7 +43,7 @@ public class Record {
     }
 
     public Position getLastPosition() {
-        return positions.size() == 0 ? null : positions.get(positions.size() - 1);
+        return positions.isEmpty() ? null : positions.get(positions.size() - 1);
     }
 
     public List<Position> getLastPositions(int n) {
@@ -58,7 +55,6 @@ public class Record {
     }
 
     public Position getPreviousPosition(Position position) {
-
         int i = positions.indexOf(position);
 
         if (i == -1) {
@@ -69,27 +65,28 @@ public class Record {
     }
 
     public void addPosition(Position position) {
+        positions.add(position);
+        /*
         Position lastPosition = getLastPosition();
         if (lastPosition == null) {
             positions.add(position);
         }
-        else if (position.getSeconds() - lastPosition.getSeconds() > 1) {
-            Function<Integer, Position> interpolation = Utilities.createInterpolation(lastPosition, position);
-
-            for (int i = lastPosition.getSeconds() + 1; i < position.getSeconds(); i++) {
-                positions.add(interpolation.apply(i));
-            }
-            positions.add(position);
+        else if (position.getTimestamp() - lastPosition.getTimestamp() > 1000) {
+            // TODO: Interpolate
         }
         else {
             positions.add(position);
         }
+        */
     }
 
     public Position addPosition(Location location) {
+        if (this.positions.isEmpty()) {
+            this.date = new Date(location.getTime());
+        }
         Position position = new Position((float)location.getLatitude(), (float)location.getLongitude(), (float)location.getAltitude());
         position.setSpeed(location.getSpeed());
-        position.setSeconds((int)((location.getTime() - date.getTime()) / 1000));
+        position.setTimestamp(location.getTime() - date.getTime());
         addPosition(position);
         return position;
     }

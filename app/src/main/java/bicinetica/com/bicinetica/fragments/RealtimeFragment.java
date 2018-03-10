@@ -1,10 +1,8 @@
 package bicinetica.com.bicinetica.fragments;
 
-import android.content.Context;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.PowerManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,8 +15,10 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Random;
 
 import bicinetica.com.bicinetica.R;
 import bicinetica.com.bicinetica.data.Position;
@@ -35,17 +35,23 @@ public class RealtimeFragment extends Fragment {
     private float max = 0;
 
     private Record record;
+    private List<Location> locations = new ArrayList<>();
 
-    private LocationProvider gpsLocationProvider;
+    private Button buttonBegin, buttonEnd;
+
+    private TextView powerMax, power3, power5, power10;
+
+    private LocationProvider locationProvider;
     private LocationProvider.LocationListener recordListener = new LocationProvider.LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
+            locations.add(location);
             Position position = record.addPosition(location);
 
             float power = calculatePower(position);
             if (power > max) {
                 max = power;
-                powerMax.setText(power + " W");
+                powerMax.setText(max + " W");
             }
 
             updatePowerMetrics();
@@ -65,26 +71,21 @@ public class RealtimeFragment extends Fragment {
     private void updatePowerMetrics() {
         int currentSize = record.getPositions().size();
 
-        if (currentSize >= 10) {
-            List<Position> positions = record.getLastPositions(10);
-            float average = Utilities.powerAverage(positions);
-            power10.setText(average + " W");
-        }
-        if (currentSize >= 5) {
-            List<Position> positions = record.getLastPositions(5);
-            float average = Utilities.powerAverage(positions);
-            power5.setText(average + " W");
-        }
         if (currentSize >= 3) {
-            List<Position> positions = record.getLastPositions(3);
-            float average = Utilities.powerAverage(positions);
+            float average = Utilities.powerAverage(record.getLastPositions(3));
             power3.setText(average + " W");
+
+            if (currentSize >= 5) {
+                average = Utilities.powerAverage(record.getLastPositions(5));
+                power5.setText(average + " W");
+
+                if (currentSize >= 10) {
+                    average = Utilities.powerAverage(record.getLastPositions(10));
+                    power10.setText(average + " W");
+                }
+            }
         }
     }
-
-    private Button buttonBegin, buttonEnd;
-
-    private TextView powerMax, power3, power5, power10;
 
     private View.OnClickListener beginButtonListener = new View.OnClickListener() {
         @Override
@@ -95,7 +96,7 @@ public class RealtimeFragment extends Fragment {
             record.setDate(Calendar.getInstance().getTime());
             record.setName("Cycling outdoor");
 
-            gpsLocationProvider.registerListener(recordListener);
+            locationProvider.registerListener(recordListener);
 
             buttonEnd.setEnabled(true);
         }
@@ -106,10 +107,10 @@ public class RealtimeFragment extends Fragment {
         public void onClick(View view) {
             buttonEnd.setEnabled(false);
 
-            gpsLocationProvider.unregisterListener(recordListener);
+            locationProvider.unregisterListener(recordListener);
 
             try {
-                saveRecord(record);
+                performSave();
             } catch (IOException ex) {
                 Toast.makeText(getActivity(), ex.getMessage(), Toast.LENGTH_LONG).show();
                 Log.e("MAPPER", ex.getMessage());
@@ -127,7 +128,7 @@ public class RealtimeFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        gpsLocationProvider = LocationProvider.createProvider(getActivity(), LocationProvider.GPS_PROVIDER);
+        locationProvider = LocationProvider.createProvider(getActivity(), LocationProvider.FUSED_PROVIDER);
     }
 
     @Override
@@ -149,10 +150,23 @@ public class RealtimeFragment extends Fragment {
         return view;
     }
 
+    private void performSave() throws IOException {
+        saveRecord(record);
+        saveRecord(locations, record.getName() + " raw data_" + dateFormat.format(record.getDate()));
+    }
+
     private static void saveRecord(Record record) throws IOException {
         File file = Environment.getExternalStorageDirectory();
         file.mkdirs();
         file = new File(file, String.format("%s_%s.json", record.getName(), dateFormat.format(record.getDate())));
+
+        RecordMapper.save(record, file);
+    }
+
+    private static void saveRecord(List<Location> record, String name) throws IOException {
+        File file = Environment.getExternalStorageDirectory();
+        file.mkdirs();
+        file = new File(file, String.format("%s.json", name));
 
         RecordMapper.save(record, file);
     }
