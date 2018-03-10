@@ -3,11 +3,13 @@ package bicinetica.com.bicinetica.fragments;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,8 +19,9 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
-import java.util.Random;
+import java.util.TimeZone;
 
 import bicinetica.com.bicinetica.R;
 import bicinetica.com.bicinetica.data.Position;
@@ -31,41 +34,52 @@ import bicinetica.com.bicinetica.model.Utilities;
 public class RealtimeFragment extends Fragment {
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
-
-    private float max = 0;
+    private static final SimpleDateFormat durationFormat = new SimpleDateFormat("HH:mm:ss");
 
     private Record record;
     private List<Location> locations = new ArrayList<>();
 
     private Button buttonBegin, buttonEnd;
 
-    private TextView powerMax, power3, power5, power10;
+    private TextView power3, power5, power10;
+    private TextView duration, speed, altitude;
+
+    private boolean running = false;
+    private long baseTime;
+
+    private final Runnable tickRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (running) {
+                duration.setText(durationFormat.format(new Date(SystemClock.elapsedRealtime() - baseTime)));
+                duration.postDelayed(tickRunnable, 1000);
+            }
+        }
+    };
 
     private LocationProvider locationProvider;
     private LocationProvider.LocationListener recordListener = new LocationProvider.LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
             locations.add(location);
-            Position position = record.addPosition(location);
+            calculatePower(record.addPosition(location));
 
-            float power = calculatePower(position);
-            if (power > max) {
-                max = power;
-                powerMax.setText(max + " W");
-            }
+            float speedValue = location.getSpeed() * 3.6f;
+            speed.setText(speedValue > 0 ? String.format("%.2f", speedValue) : "--");
+
+            long altitudeValue = Math.round(location.getAltitude());
+            altitude.setText(altitudeValue > 0 ? String.valueOf(altitudeValue) : "--");
 
             updatePowerMetrics();
         }
     };
 
-    private float calculatePower(Position position) {
-        float power = 0;
+    private void calculatePower(Position position) {
+
         if (record.getPositions().size() > 1) {
             Position previousPosition = record.getPreviousPosition(position);
-            power = CyclingOutdoorPower.calculatePower(previousPosition, position);
-            position.setPower(power);
+            position.setPower(CyclingOutdoorPower.calculatePower(previousPosition, position));
         }
-        return power;
     }
 
     private void updatePowerMetrics() {
@@ -73,15 +87,15 @@ public class RealtimeFragment extends Fragment {
 
         if (currentSize >= 3) {
             float average = Utilities.powerAverage(record.getLastPositions(3));
-            power3.setText(average + " W");
+            power3.setText(average > 0 ? String.format("%.2f", average) : "--");
 
             if (currentSize >= 5) {
                 average = Utilities.powerAverage(record.getLastPositions(5));
-                power5.setText(average + " W");
+                power5.setText(average > 0 ? String.format("%.2f", average) : "--");
 
                 if (currentSize >= 10) {
                     average = Utilities.powerAverage(record.getLastPositions(10));
-                    power10.setText(average + " W");
+                    power10.setText(average > 0 ? String.format("%.2f", average) : "--");
                 }
             }
         }
@@ -92,11 +106,20 @@ public class RealtimeFragment extends Fragment {
         public void onClick(View view) {
             buttonBegin.setEnabled(false);
 
+            locations.clear();
+
             record = new Record();
             record.setDate(Calendar.getInstance().getTime());
             record.setName("Cycling outdoor");
 
             locationProvider.registerListener(recordListener);
+
+            running = true;
+            baseTime = SystemClock.elapsedRealtime();
+            duration.postDelayed(tickRunnable, 1000);
+            duration.setText("00:00:00");
+
+            getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
             buttonEnd.setEnabled(true);
         }
@@ -107,6 +130,9 @@ public class RealtimeFragment extends Fragment {
         public void onClick(View view) {
             buttonEnd.setEnabled(false);
 
+            running = false;
+            duration.removeCallbacks(tickRunnable);
+
             locationProvider.unregisterListener(recordListener);
 
             try {
@@ -116,7 +142,7 @@ public class RealtimeFragment extends Fragment {
                 Log.e("MAPPER", ex.getMessage());
             }
 
-            max = 0;
+            getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
             buttonBegin.setEnabled(true);
         }
@@ -127,6 +153,8 @@ public class RealtimeFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        durationFormat.setTimeZone(TimeZone.getTimeZone("GTM"));
 
         locationProvider = LocationProvider.createProvider(getActivity(), LocationProvider.FUSED_PROVIDER);
     }
@@ -142,10 +170,12 @@ public class RealtimeFragment extends Fragment {
 
         buttonEnd.setEnabled(false);
 
-        powerMax = view.findViewById(R.id.power_max);
-        power3 = view.findViewById(R.id.power_3_s);
-        power5 = view.findViewById(R.id.power_5_s);
-        power10 = view.findViewById(R.id.power_10_s);
+        duration = view.findViewById(R.id.duration);
+        speed = view.findViewById(R.id.speed);
+        altitude = view.findViewById(R.id.altitude);
+        power3 = view.findViewById(R.id.power_3s);
+        power5 = view.findViewById(R.id.power_5s);
+        power10 = view.findViewById(R.id.power_10s);
 
         return view;
     }

@@ -7,6 +7,19 @@
     <string-array name="tab_names">
         <item>Activity</item>
         <item>Records</item>
+        <!--
         <item>Map</item>
+        -->
     </string-array>
+
+    <string name="sensors">Sensors</string>
+    <string name="search">Search</string>
+
+    <string name="power_average_3s">Power average 3s (W)</string>
+    <string name="power_average_5s">Power average 5s (W)</string>
+    <string name="power_average_10s">Power average 10s (W)</string>
+
+    <string name="duration">Duration</string>
+    <string name="speed">Speed (km/h)</string>
+    <string name="altitude">Altitude (m)</string>
 </resources>
