@@ -8,7 +8,6 @@ import java.util.List;
 
 public class Record {
 
-    private int id;
     private String name;
     private Date date;
     private ArrayList<Position> positions;
@@ -22,13 +21,6 @@ public class Record {
     }
     public void setName(String name) {
         this.name = name;
-    }
-
-    public int getId() {
-        return id;
-    }
-    public void setId(int id)  {
-        this.id = id;
     }
 
     public Date getDate() {

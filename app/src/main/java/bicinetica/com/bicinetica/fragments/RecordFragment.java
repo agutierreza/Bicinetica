@@ -41,22 +41,18 @@ public class RecordFragment extends Fragment {
             ArrayList<Record> items = new ArrayList<>();
 
             Record r = new Record();
-            r.setId(1);
             r.setName("Running indoor");
             items.add(r);
 
             r = new Record();
-            r.setId(2);
             r.setName("Running outdoor");
             items.add(r);
 
             r = new Record();
-            r.setId(3);
             r.setName("Cycling indoor");
             items.add(r);
 
             r = new Record();
-            r.setId(4);
             r.setName("Cycling outdoor");
             items.add(r);
 
