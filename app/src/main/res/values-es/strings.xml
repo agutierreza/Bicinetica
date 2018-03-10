@@ -1,12 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="begin">Empezar</string>
-    <string name="end">Terminar</string>
+    <string name="start">Empezar</string>
+    <string name="stop">Detener</string>
 
     <string-array name="tab_names">
         <item>Activad</item>
         <item>Registro</item>
+        <!--
         <item>Mapa</item>
+        -->
     </string-array>
+
+    <string name="sensors">Sensores</string>
+    <string name="search">Buscar</string>
+
+    <string name="power_average_3s">Potencia media 3s (W)</string>
+    <string name="power_average_5s">Potencia media 5s (W)</string>
+    <string name="power_average_10s">Potencia media 10s (W)</string>
+
+    <string name="duration">Duración</string>
+    <string name="speed">Velocidad (km/h)</string>
+    <string name="altitude">Altura (m)</string>
 </resources>

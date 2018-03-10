@@ -117,13 +117,13 @@ public final class Utilities {
                     p2.getTimestamp(), p2.getSpeed());
 
             @Override
-            public Position apply(Long seconds) {
+            public Position apply(Long milliseconds) {
 
-                return new Position(latitude.apply(seconds),
-                        longitude.apply(seconds),
-                        altitude.apply(seconds),
-                        speed.apply(seconds),
-                        seconds);
+                return new Position(latitude.apply(milliseconds),
+                        longitude.apply(milliseconds),
+                        altitude.apply(milliseconds),
+                        speed.apply(milliseconds),
+                        milliseconds);
             }
         };
     }
