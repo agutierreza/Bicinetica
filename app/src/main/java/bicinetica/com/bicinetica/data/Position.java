@@ -16,23 +16,18 @@ public class Position {
     }
 
     public Position(float latitude, float longitude, float altitude) {
-        this.latitude = latitude;
-        this.longitude = longitude;
-        this.altitude = altitude;
+        this(latitude, longitude, altitude, 0);
     }
     
-    public Position(float latitude, float longitude, float altitude, int sec) {
-        this.latitude = latitude;
-        this.longitude = longitude;
-        this.altitude = altitude;
-        this.seconds = sec;
+    public Position(float latitude, float longitude, float altitude, float speed) {
+        this(latitude, longitude, altitude, speed, 0);
     }
     
-    public Position(float latitude, float longitude, float altitude, int sec, float speed) {
+    public Position(float latitude, float longitude, float altitude, float speed, int seconds) {
         this.latitude = latitude;
         this.longitude = longitude;
         this.altitude = altitude;
-        this.seconds = sec;
+        this.seconds = seconds;
         this.speed = speed;
     }
 
