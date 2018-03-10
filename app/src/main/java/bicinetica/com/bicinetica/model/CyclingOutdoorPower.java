@@ -34,6 +34,7 @@ public class CyclingOutdoorPower {
 		float pRolling = avgSpeed * cRolling * gForce * totalMass * (float)Math.cos(beta);
 		float power = pKin + pGravity + pDrag + pRolling;
 
-    	return Math.max(0, power);
+		power = Math.max(0, power);
+    	return Float.isNaN(power) ? 0 : power;
     }
 }
