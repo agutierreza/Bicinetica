@@ -2,27 +2,12 @@ package bicinetica.com.bicinetica.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import bicinetica.com.bicinetica.data.Position;
 import bicinetica.com.bicinetica.data.PositionGPS;
 
 public final class Utilities {
-
-    public static ArrayList<Float> linealInterpolation(float a, float b, int n){
-        ArrayList<Float> ar = new ArrayList<>();
-        if (n==1) {
-            ar.add(a);
-            ar.add(b);
-        }
-        else {
-            //for n nodes divide (n-1) and for until i<n
-            float mesh = (b - a) / n;
-            for (int i = 0; i <= n; i++) {
-                ar.add(a + mesh * i);
-            }
-        }
-        return ar;
-    }
 
     public static float average(Collection<Float> items) {
         float res = 0;
@@ -48,7 +33,7 @@ public final class Utilities {
      * @param powerList List of activity power, second by second
      * @param seg The number of seconds to get the best average of
      */
-    public static int cpseg(ArrayList<Integer> powerList, int seg) {
+    public static int cpseg(List<Integer> powerList, int seg) {
     	int sum = 0, bestSum = 0;
     	for (int i = 0; i < seg; i++) {
     		sum += powerList.get(i);
@@ -107,6 +92,51 @@ public final class Utilities {
     	}
     	
     	return positions;
-    }    
+    }
 
+    public static Function<Integer, Position> createInterpolation(final Position p1, final Position p2) {
+        return new Function<Integer, Position>() {
+
+            Interpolator latitude = new Interpolator(
+                    p1.getSeconds(), p1.getLatitude(),
+                    p2.getSeconds(), p2.getLatitude());
+            Interpolator longitude = new Interpolator(
+                    p1.getSeconds(), p1.getLongitude(),
+                    p2.getSeconds(), p2.getLongitude());
+            Interpolator altitude = new Interpolator(
+                    p1.getSeconds(), p1.getAltitude(),
+                    p2.getSeconds(), p2.getAltitude());
+            Interpolator speed = new Interpolator(
+                    p1.getSeconds(), p1.getSpeed(),
+                    p2.getSeconds(), p2.getSpeed());
+
+            @Override
+            public Position apply(Integer seconds) {
+
+                return new Position(latitude.apply(seconds),
+                        longitude.apply(seconds),
+                        altitude.apply(seconds),
+                        speed.apply(seconds),
+                        seconds);
+            }
+        };
+    }
+
+}
+
+class Interpolator implements Function<Integer, Float> {
+
+    private float m, n;
+
+    public Interpolator(int x1, float y1, int x2, float y2) {
+        if (x1 >= x2) throw new IllegalArgumentException();
+
+        m = (y2 - y1) / (x2 - x1);
+        n = y1 - m * x1;
+    }
+
+    @Override
+    public Float apply(Integer value) {
+        return m * value + n;
+    }
 }
