@@ -92,24 +92,24 @@ public final class Utilities {
         return positions;
     }
 
-    public static Function<Integer, Position> createInterpolation(final Position p1, final Position p2) {
-        return new Function<Integer, Position>() {
+    public static Function<Long, Position> createInterpolation(final Position p1, final Position p2) {
+        return new Function<Long, Position>() {
 
-            InterpolatorInt latitude = new InterpolatorInt(
-                    p1.getSeconds(), p1.getLatitude(),
-                    p2.getSeconds(), p2.getLatitude());
-            InterpolatorInt longitude = new InterpolatorInt(
-                    p1.getSeconds(), p1.getLongitude(),
-                    p2.getSeconds(), p2.getLongitude());
-            InterpolatorInt altitude = new InterpolatorInt(
-                    p1.getSeconds(), p1.getAltitude(),
-                    p2.getSeconds(), p2.getAltitude());
-            InterpolatorInt speed = new InterpolatorInt(
-                    p1.getSeconds(), p1.getSpeed(),
-                    p2.getSeconds(), p2.getSpeed());
+            InterpolatorLong latitude = new InterpolatorLong(
+                    p1.getTimestamp(), p1.getLatitude(),
+                    p2.getTimestamp(), p2.getLatitude());
+            InterpolatorLong longitude = new InterpolatorLong(
+                    p1.getTimestamp(), p1.getLongitude(),
+                    p2.getTimestamp(), p2.getLongitude());
+            InterpolatorLong altitude = new InterpolatorLong(
+                    p1.getTimestamp(), p1.getAltitude(),
+                    p2.getTimestamp(), p2.getAltitude());
+            InterpolatorLong speed = new InterpolatorLong(
+                    p1.getTimestamp(), p1.getSpeed(),
+                    p2.getTimestamp(), p2.getSpeed());
 
             @Override
-            public Position apply(Integer seconds) {
+            public Position apply(Long seconds) {
 
                 return new Position(latitude.apply(seconds),
                         longitude.apply(seconds),
@@ -150,11 +150,11 @@ public final class Utilities {
 
 }
 
-class InterpolatorInt implements Function<Integer, Float> {
+class InterpolatorLong implements Function<Long, Float> {
 
     private float m, n;
 
-    public InterpolatorInt(int x1, float y1, int x2, float y2) {
+    public InterpolatorLong(long x1, float y1, long x2, float y2) {
         if (x1 >= x2) throw new IllegalArgumentException();
 
         m = (y2 - y1) / (x2 - x1);
@@ -162,7 +162,7 @@ class InterpolatorInt implements Function<Integer, Float> {
     }
 
     @Override
-    public Float apply(Integer value) {
+    public Float apply(Long value) {
         return m * value + n;
     }
 }

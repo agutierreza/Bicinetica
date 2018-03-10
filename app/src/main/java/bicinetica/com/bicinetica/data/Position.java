@@ -116,7 +116,7 @@ public class Position {
                 this.latitude == other.latitude &&
                 this.longitude == other.longitude &&
                 this.speed == other.speed &&
-                this.seconds == other.seconds &&
+                this.timestamp == other.timestamp &&
                 this.power == other.power;
     }
 }
