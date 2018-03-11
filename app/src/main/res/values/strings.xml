@@ -29,5 +29,6 @@
     <string name="ask_for_connection">Do you want to connect this device?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="devices">Devices</string>
 
 </resources>

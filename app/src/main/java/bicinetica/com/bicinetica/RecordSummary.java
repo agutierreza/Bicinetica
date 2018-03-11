@@ -4,8 +4,9 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.net.Uri;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
@@ -41,7 +42,7 @@ import bicinetica.com.bicinetica.model.Utilities;
 
 public class RecordSummary extends AppCompatActivity implements OnMapReadyCallback {
 
-    private static final SimpleDateFormat durationFormat = new SimpleDateFormat("HH:mm:ss");
+    private static final SimpleDateFormat durationFormat = new SimpleDateFormat("H:mm:ss");
 
     private GoogleMap mMap;
     private Record record;
@@ -55,6 +56,11 @@ public class RecordSummary extends AppCompatActivity implements OnMapReadyCallba
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_record_summary);
+
+        Toolbar myToolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(myToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         durationFormat.setTimeZone(TimeZone.getTimeZone("GTM"));
 
@@ -70,6 +76,8 @@ public class RecordSummary extends AppCompatActivity implements OnMapReadyCallba
         catch (IOException e) {
             e.printStackTrace();
         }
+
+        getSupportActionBar().setTitle(record.getName());
 
         float distanceValue = record.getDistance() / 1000;
         distance.setText(distanceValue > 0 ? String.format("%.2f km", distanceValue) : "--");
@@ -99,6 +107,12 @@ public class RecordSummary extends AppCompatActivity implements OnMapReadyCallba
         SupportMapFragment mMapFragment = new SupportMapFragment();
         getSupportFragmentManager().beginTransaction().add(R.id.map_container, mMapFragment).commit();
         mMapFragment.getMapAsync(this);
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
     }
 
     @Override
