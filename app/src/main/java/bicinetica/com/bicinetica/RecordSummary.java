@@ -1,10 +1,13 @@
 package bicinetica.com.bicinetica;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.LineChart;
@@ -25,6 +28,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -34,6 +38,7 @@ import java.util.TimeZone;
 import bicinetica.com.bicinetica.data.Position;
 import bicinetica.com.bicinetica.data.Record;
 import bicinetica.com.bicinetica.data.RecordMapper;
+import bicinetica.com.bicinetica.fragments.RecordFragment;
 
 public class RecordSummary extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -44,6 +49,8 @@ public class RecordSummary extends AppCompatActivity implements OnMapReadyCallba
 
     private TextView duration, distance;
     private LineChart mChart;
+
+    private String filename;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +63,7 @@ public class RecordSummary extends AppCompatActivity implements OnMapReadyCallba
         distance = findViewById(R.id.distance);
 
         Intent intent = getIntent();
-        String filename = intent.getStringExtra("file_name");
+        filename = intent.getStringExtra("file_name");
 
         try {
             record = RecordMapper.load(filename);
@@ -93,6 +100,25 @@ public class RecordSummary extends AppCompatActivity implements OnMapReadyCallba
         SupportMapFragment mMapFragment = new SupportMapFragment();
         getSupportFragmentManager().beginTransaction().add(R.id.map_container, mMapFragment).commit();
         mMapFragment.getMapAsync(this);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.delete, menu);
+        return true;
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.delete) {
+            File f = new File(filename);
+            f.delete();
+            onBackPressed();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     public void onMapReady(GoogleMap googleMap) {

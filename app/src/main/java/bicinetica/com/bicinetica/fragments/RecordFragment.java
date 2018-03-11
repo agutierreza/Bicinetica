@@ -18,12 +18,16 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import bicinetica.com.bicinetica.R;
 import bicinetica.com.bicinetica.RecordSummary;
 import bicinetica.com.bicinetica.data.Record;
 
 public class RecordFragment extends Fragment {
+
+    private RecordListAdapter adapter;
+    private List<Record> items;
 
     private OnListFragmentInteractionListener mListener;
     private static final SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd_HHmmss");
@@ -46,7 +50,7 @@ public class RecordFragment extends Fragment {
             RecyclerView recyclerView = (RecyclerView) view;
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
 
-            ArrayList<Record> items = new ArrayList<>();
+            items = new ArrayList<>();
 
             final String name = "Cycling outdoor_";
             final String extension = ".json";
@@ -76,7 +80,7 @@ public class RecordFragment extends Fragment {
                 items.add(record);
             }
 
-            recyclerView.setAdapter(new RecordListAdapter(items, new OnListFragmentInteractionListener() {
+            adapter = new RecordListAdapter(items, new OnListFragmentInteractionListener() {
                 @Override
                 public void onListFragmentInteraction(Record item) {
 
@@ -87,13 +91,32 @@ public class RecordFragment extends Fragment {
                     intent.putExtra("file_name", file.getAbsolutePath());
                     context.startActivity(intent);
                 }
-            }));
+            });
+            recyclerView.setAdapter(adapter);
             recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL));
         }
 
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        boolean notify = false;
+
+        for (int i = items.size() -  1; i >= 0; i--) {
+            Record item = items.get(i);
+            File file = Environment.getExternalStorageDirectory();
+            file = new File(file, String.format("%s_%s.json", item.getName(), format.format(item.getDate())));
+            if (!file.exists()) {
+                notify = true;
+                items.remove(i);
+            }
+        }
+
+        if (notify) adapter.notifyDataSetChanged();
+    }
 
     @Override
     public void onAttach(Context context) {
