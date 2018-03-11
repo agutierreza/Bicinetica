@@ -31,6 +31,10 @@ public class CpMeasurement extends Characteristic {
         super(CHARACTERISTIC_UUID);
     }
 
+    public int getInstantaneousPower() {
+        return instantaneousPower;
+    }
+
     @Override
     public String toString() {
         return "crankRevolutions = " + crankRevolutions + " , pedalPowerBalance = " + pedalPowerBalance + " , instantaneousPower = " + instantaneousPower + " , pedalPowerReference = " + pedalPowerReferencePresent;

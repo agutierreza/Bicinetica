@@ -93,6 +93,8 @@ public class RecordMapper {
                 positions.put(new JSONObject()
                         .put("time", location.getTime() - baseLocation.getTime())
                         .put("speed", location.getSpeed())
+                        .put("rpm", location.getExtras().getFloat("rpm"))
+                        .put("power", location.getExtras().getFloat("power"))
                         .put("location", new JSONObject()
                                 .put("longitude", location.getLongitude())
                                 .put("latitude", location.getLatitude())
