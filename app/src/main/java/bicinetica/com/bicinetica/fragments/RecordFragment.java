@@ -103,19 +103,15 @@ public class RecordFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        boolean notify = false;
-
         for (int i = items.size() -  1; i >= 0; i--) {
             Record item = items.get(i);
             File file = Environment.getExternalStorageDirectory();
             file = new File(file, String.format("%s_%s.json", item.getName(), format.format(item.getDate())));
             if (!file.exists()) {
-                notify = true;
                 items.remove(i);
+                adapter.notifyItemRangeRemoved(i, 1);
             }
         }
-
-        if (notify) adapter.notifyDataSetChanged();
     }
 
     @Override
