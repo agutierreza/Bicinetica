@@ -33,9 +33,7 @@
             android:name=".SensorsActivity"
             android:theme="@style/AppTheme"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:screenOrientation="portrait">
-
-        </activity>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".RecordSummary"
             android:theme="@style/AppTheme" />
