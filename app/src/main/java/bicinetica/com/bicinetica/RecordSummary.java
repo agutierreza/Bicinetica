@@ -1,6 +1,5 @@
 package bicinetica.com.bicinetica;
 
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
@@ -26,7 +25,6 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.io.File;
@@ -39,7 +37,7 @@ import java.util.TimeZone;
 import bicinetica.com.bicinetica.data.Position;
 import bicinetica.com.bicinetica.data.Record;
 import bicinetica.com.bicinetica.data.RecordMapper;
-import bicinetica.com.bicinetica.fragments.RecordFragment;
+import bicinetica.com.bicinetica.model.Utilities;
 
 public class RecordSummary extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -130,6 +128,7 @@ public class RecordSummary extends AppCompatActivity implements OnMapReadyCallba
             //share.putExtra(Intent.EXTRA_TEXT, "Sharing File...");
 
             startActivity(Intent.createChooser(share, "Share File"));
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -154,17 +153,22 @@ public class RecordSummary extends AppCompatActivity implements OnMapReadyCallba
             options.add(new LatLng(position.getLatitude(), position.getLongitude()));
         }
 
-        Polyline line = mMap.addPolyline(options);
+        mMap.addPolyline(options);
     }
 
     private void updateData() {
+        Utilities.suavice(record.getPositions());
         for (Position position : record.getPositions()) {
             updateData(position);
         }
+
+        mChart.getData().notifyDataChanged();
+        mChart.notifyDataSetChanged();
+        mChart.invalidate();
     }
 
-    private Position lastPosition;
-    private float offset;
+    //private Position lastPosition;
+    //private float offset;
 
     private void updateData(Position position)
     {
@@ -215,18 +219,12 @@ public class RecordSummary extends AppCompatActivity implements OnMapReadyCallba
             //distance = (LineDataSet)mChart.getData().getDataSetByIndex(2);
         }
 
-        if (lastPosition != null) {
-            offset += lastPosition.getDistance(position);
-        }
+        //if (lastPosition != null) offset += lastPosition.getDistance(position);
 
         speed.addEntry(new Entry(position.getTimestamp(), position.getSpeed() * 3.6f));
         altitude.addEntry(new Entry(position.getTimestamp(), Math.max(position.getAltitude(), 0)));
         //distance.addEntry(new Entry(data.getTimestamp(), offset));
 
-        lastPosition = position;
-
-        mChart.getData().notifyDataChanged();
-        mChart.notifyDataSetChanged();
-        mChart.invalidate();
+        //lastPosition = position;
     }
 }
