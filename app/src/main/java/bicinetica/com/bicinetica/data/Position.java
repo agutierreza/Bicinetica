@@ -2,7 +2,7 @@ package bicinetica.com.bicinetica.data;
 
 import bicinetica.com.bicinetica.model.Utilities;
 
-public class Position {
+public class Position implements Cloneable {
 
     private static final float geodesica = 40030000;
     private static final float geodesica_u = geodesica / 360;
@@ -117,5 +117,12 @@ public class Position {
                 this.speed == other.speed &&
                 this.timestamp == other.timestamp &&
                 this.power == other.power;
+    }
+
+    @Override
+    public Position clone() {
+        Position p = new Position(this.altitude, this.longitude, this.latitude, this.speed, this.timestamp);
+        p.power = this.power;
+        return p;
     }
 }

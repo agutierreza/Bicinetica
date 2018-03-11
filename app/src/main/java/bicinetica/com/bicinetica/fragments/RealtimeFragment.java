@@ -24,6 +24,7 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -36,6 +37,7 @@ import bicinetica.com.bicinetica.data.Position;
 import bicinetica.com.bicinetica.data.Record;
 import bicinetica.com.bicinetica.data.RecordMapper;
 import bicinetica.com.bicinetica.model.CyclingOutdoorPower;
+import bicinetica.com.bicinetica.model.Function;
 import bicinetica.com.bicinetica.model.LocationProvider;
 import bicinetica.com.bicinetica.model.Utilities;
 import bicinetica.com.bicinetica.model.bluetooth.BluetoothCpService;
@@ -66,6 +68,9 @@ public class RealtimeFragment extends Fragment {
 
     private float rpmValue, power;
 
+    private ArrayDeque<Position> buffer = new ArrayDeque<>();
+    private Position previousPosition1, previousPosition2;
+
     private final Runnable tickRunnable = new Runnable() {
         @Override
         public void run() {
@@ -85,6 +90,7 @@ public class RealtimeFragment extends Fragment {
             extras.putFloat("rpm", rpmValue);
             location.setExtras(extras);
             locations.add(location);
+
             calculatePower(record.addPosition(location));
 
             if (visible) {
@@ -195,31 +201,76 @@ public class RealtimeFragment extends Fragment {
         updatePowerMetrics();
     }
 
+    private List<Position> getLastPositions(int n) {
+        List<Position> res = new ArrayList<>();
+
+        Object[] arr = buffer.toArray();
+        for (int i = arr.length - 1; i >= arr.length - n; i--) {
+            res.add((Position)arr[i]);
+        }
+
+        return res;
+    }
+
     private void updatePowerMetrics() {
-        int currentSize = record.getPositions().size();
+        int currentSize = buffer.size();
 
         if (currentSize >= 3) {
-            float average = Utilities.powerAverage(record.getLastPositions(3));
+            float average = Utilities.powerAverage(getLastPositions(3));
             power3.setText(average > 0 ? String.format("%.2f", average) : "--");
 
             if (currentSize >= 5) {
-                average = Utilities.powerAverage(record.getLastPositions(5));
+                average = Utilities.powerAverage(getLastPositions(5));
                 power5.setText(average > 0 ? String.format("%.2f", average) : "--");
 
                 if (currentSize >= 10) {
-                    average = Utilities.powerAverage(record.getLastPositions(10));
+                    average = Utilities.powerAverage(getLastPositions(10));
                     power10.setText(average > 0 ? String.format("%.2f", average) : "--");
                 }
             }
         }
     }
 
-    private void calculatePower(Position position) {
-
-        if (record.getPositions().size() > 1) {
-            Position previousPosition = record.getPreviousPosition(position);
-            position.setPower(CyclingOutdoorPower.calculatePower(previousPosition, position));
+    private void addToBuffer(Position position) {
+        if (buffer.size() == 10) {
+            buffer.remove();
         }
+        if (buffer.size() > 0) {
+            position.setPower(CyclingOutdoorPower.calculatePower(buffer.peekLast(), position));
+        }
+        buffer.add(position);
+    }
+
+    private void calculatePower(Position position) {
+        position = position.clone(); // Create a working copy
+
+        if (position.getAltitude() == 0 && previousPosition1 != null && previousPosition2 != null) {
+            Function<Long, Position> interpolation = Utilities.createInterpolation(previousPosition2, previousPosition1);
+
+            Position expected = interpolation.apply(position.getTimestamp());
+            position.setAltitude(expected.getAltitude());
+            if (position.getSpeed() == 0) {
+                position.setSpeed(expected.getSpeed());
+            }
+        }
+
+        if (previousPosition1 != null) {
+            Function<Long, Position> interpolation = Utilities.createInterpolation(previousPosition1, position);
+
+            //Position aux = buffer.peekLast();
+            long start = buffer.peekLast().getTimestamp() + 1000;
+            long end = position.getTimestamp() + (1000 - position.getTimestamp() % 1000);
+
+            for (long i = start; i <= end; i += 1000) {
+                addToBuffer(interpolation.apply(i));
+            }
+        }
+        else {
+            addToBuffer(position);
+        }
+
+        previousPosition2 = previousPosition1;
+        previousPosition1 = position;
     }
 
     private BluetoothGattCallback callback = new BluetoothGattCallback() {
