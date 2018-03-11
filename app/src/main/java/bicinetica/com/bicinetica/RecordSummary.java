@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -117,6 +118,18 @@ public class RecordSummary extends AppCompatActivity implements OnMapReadyCallba
             f.delete();
             onBackPressed();
             return true;
+        }
+        else if (id == R.id.share) {
+            Intent share = new Intent(Intent.ACTION_SEND);
+
+            share.setType("application/pdf");
+            share.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(filename)));
+            //share.setPackage("com.whatsapp");
+
+            //share.putExtra(Intent.EXTRA_SUBJECT, "Sharing File...");
+            //share.putExtra(Intent.EXTRA_TEXT, "Sharing File...");
+
+            startActivity(Intent.createChooser(share, "Share File"));
         }
         return super.onOptionsItemSelected(item);
     }
