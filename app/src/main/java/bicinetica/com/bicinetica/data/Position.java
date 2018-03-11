@@ -83,13 +83,12 @@ public class Position {
     }
 
     /***
-     * Get the power if it is available, watts.
+     * Get the power if it is available, in watts.
      * @return
      */
     public float getPower() {
         return power;
     }
-
     public void setPower(float power) {
         this.power = power;
     }
