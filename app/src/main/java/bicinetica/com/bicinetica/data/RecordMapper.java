@@ -9,10 +9,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.util.Date;
 import java.util.List;
+import java.util.Scanner;
 
 public class RecordMapper {
 
@@ -109,5 +114,48 @@ public class RecordMapper {
         }
 
         return base;
+    }
+
+    public static Record load(String filePath) throws IOException {
+        return load(new File(filePath));
+    }
+
+    public static Record load(File file) throws IOException {
+        FileReader reader = new FileReader(file);
+        Record res = load(reader);
+        reader.close();
+        return res;
+    }
+
+    public static Record load(InputStreamReader reader) {
+        String value = convertStreamToString(reader);
+
+        Record record = new Record();
+        try {
+            JSONObject object = new JSONObject(value);
+
+            record.setName(object.getString("name"));
+            record.setDate(new Date(object.getLong("time")));
+
+            JSONArray array = object.getJSONArray("positions");
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject item = array.getJSONObject(i);
+                record.getPositions().add(new Position(
+                        (float)item.getDouble("latitude"),
+                        (float)item.getDouble("longitude"),
+                        (float)item.getDouble("altitude"),
+                        (float)item.getDouble("speed"),
+                        item.getLong("time")));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return record;
+    }
+
+    static String convertStreamToString(Reader reader) {
+        Scanner s = new Scanner(reader).useDelimiter("\\A");
+        return s.hasNext() ? s.next() : "";
     }
 }
