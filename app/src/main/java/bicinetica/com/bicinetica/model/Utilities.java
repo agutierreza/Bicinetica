@@ -9,6 +9,8 @@ import bicinetica.com.bicinetica.data.PositionGPS;
 
 public final class Utilities {
 
+    private static final float ALTITUDE_ERROR = 10;
+
     public static float average(Collection<Float> items) {
         float res = 0;
         for (float item : items) res += item;
@@ -90,6 +92,48 @@ public final class Utilities {
         }
 
         return positions;
+    }
+
+    public static void suavice(List<Position> positions) {
+        for (int i = 0; i < positions.size(); i++) {
+            suavice(i, positions);
+        }
+    }
+
+    private static void suavice(int i, List<Position> positions) {
+        Position position = positions.get(i);
+        Position previous = i > 0 ? positions.get(i - 1) : null;
+
+        if (previous != null && position.getAltitude()  == 0) {
+        //if (previous != null && previous.getAltitude() - position.getAltitude() > ALTITUDE_ERROR) {
+            int j = getNextValidIndex(i, previous.getAltitude(), positions);
+
+            Position next = j > 0 ? positions.get(j) : null;
+            if (next != null) {
+
+                Function<Long, Position> interpolation = Utilities.createInterpolation(previous, next);
+
+                for (int k = i; k < j; k++) {
+                    position = positions.get(k);
+
+                    Position expected = interpolation.apply(position.getTimestamp());
+                    if (position.getSpeed() == 0) {
+                        position.setSpeed(expected.getSpeed());
+                    }
+                    position.setAltitude(expected.getAltitude());
+                }
+            }
+        }
+    }
+
+    private static int getNextValidIndex(int i, float validAltitude, List<Position> positions) {
+        for (int j = i; j < positions.size(); j++) {
+            if (positions.get(j).getAltitude() != 0) {
+            //if (validAltitude - positions.get(j).getAltitude() < ALTITUDE_ERROR) {
+                return j;
+            }
+        }
+        return -1;
     }
 
     public static Function<Long, Position> createInterpolation(final Position p1, final Position p2) {
