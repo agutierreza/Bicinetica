@@ -1,6 +1,7 @@
 package bicinetica.com.bicinetica;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
@@ -9,6 +10,8 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
@@ -35,11 +38,29 @@ public class MainActivity extends AppCompatActivity {
         askForPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE);
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.sensor_settings) {
+            Intent intent = new Intent(this, SensorsActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     private void askForPermissions(String permission)
     {
-        if (ContextCompat.checkSelfPermission(MainActivity.this, permission) != PackageManager.PERMISSION_GRANTED)
+        if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED)
         {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, permission))
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission))
             {
                 Toast.makeText(getApplicationContext(), "The application needs explanation", Toast.LENGTH_LONG).show();
             }
@@ -48,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "The aplication doesn't need explanation", Toast.LENGTH_LONG).show();
             }
 
-            ActivityCompat.requestPermissions(MainActivity.this, new String[] { permission }, 0);
+            ActivityCompat.requestPermissions(this, new String[] { permission }, 0);
         }
     }
 }

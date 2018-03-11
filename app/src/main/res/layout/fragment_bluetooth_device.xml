@@ -12,13 +12,13 @@
         android:layout_weight="1"
         android:layout_margin="@dimen/text_margin"
         android:contentDescription="@string/app_name"
-        app:srcCompat="@drawable/ic_directions_bike_black_24dp" />
+        app:srcCompat="@drawable/ic_devices_other_black_24dp" />
 
     <TextView
         android:id="@+id/content"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/text_margin"
-        android:text="Record name"
+        android:text="Device name"
         android:textAppearance="?attr/textAppearanceListItem" />
 </LinearLayout>
