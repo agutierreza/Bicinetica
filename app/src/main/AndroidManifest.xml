@@ -36,6 +36,9 @@
             android:screenOrientation="portrait">
 
         </activity>
+        <activity
+            android:name=".RecordSummary"
+            android:theme="@style/AppTheme" />
     </application>
 
 </manifest>

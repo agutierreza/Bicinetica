@@ -23,9 +23,11 @@
     <string name="duration">Duración</string>
     <string name="speed">Velocidad (km/h)</string>
     <string name="altitude">Altura (m)</string>
+    <string name="distance">Distancia</string>
     <string name="speed_rpm">Velocidad (rpm)</string>
 
     <string name="ask_for_connection">¿Quieres conectarte a este dispositivo?</string>
     <string name="yes">Sí</string>
     <string name="no">No</string>
+
 </resources>

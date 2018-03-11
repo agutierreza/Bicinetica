@@ -1,6 +1,7 @@
 package bicinetica.com.bicinetica.fragments;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
@@ -19,11 +20,13 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import bicinetica.com.bicinetica.R;
+import bicinetica.com.bicinetica.RecordSummary;
 import bicinetica.com.bicinetica.data.Record;
 
 public class RecordFragment extends Fragment {
 
     private OnListFragmentInteractionListener mListener;
+    private static final SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd_HHmmss");
 
     public RecordFragment() {
     }
@@ -38,7 +41,7 @@ public class RecordFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_record_list, container, false);
 
         if (view instanceof RecyclerView) {
-            Context context = view.getContext();
+            final Context context = view.getContext();
 
             RecyclerView recyclerView = (RecyclerView) view;
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
@@ -55,7 +58,6 @@ public class RecordFragment extends Fragment {
                 }
             });
 
-            SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd_HHmmss");
 
             for (File file: files) {
                 String datetime = file.getName().substring(name.length(), file.getName().indexOf('.'));
@@ -74,7 +76,18 @@ public class RecordFragment extends Fragment {
                 items.add(record);
             }
 
-            recyclerView.setAdapter(new RecordListAdapter(items));
+            recyclerView.setAdapter(new RecordListAdapter(items, new OnListFragmentInteractionListener() {
+                @Override
+                public void onListFragmentInteraction(Record item) {
+
+                    File file = Environment.getExternalStorageDirectory();
+                    file = new File(file, String.format("%s_%s.json", item.getName(), format.format(item.getDate())));
+
+                    Intent intent = new Intent(context, RecordSummary.class);
+                    intent.putExtra("file_name", file.getAbsolutePath());
+                    context.startActivity(intent);
+                }
+            }));
             recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL));
         }
 
