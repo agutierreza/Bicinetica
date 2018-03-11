@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.UUID;
 
 import bicinetica.com.bicinetica.model.bluetooth.BluetoothCscService;
+import bicinetica.com.bicinetica.model.bluetooth.BluetoothDevicesManager;
 
 public class SensorsActivity extends AppCompatActivity {
 
@@ -34,7 +35,7 @@ public class SensorsActivity extends AppCompatActivity {
     private BluetoothLeScanner bluetoothLeScanner;
 
     private List<BluetoothDevice> scanned = new ArrayList<>();
-    private List<BluetoothDevice> connectedDevices = new ArrayList<>();
+    private List<BluetoothDevice> connectedDevices;
 
     private BluetoothDeviceAdapter scannerAdapter;
     private BluetoothDeviceAdapter connectedAdapter;
@@ -69,6 +70,8 @@ public class SensorsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sensors);
+
+        connectedDevices = BluetoothDevicesManager.getInstance().getDevices();
 
         RecyclerView connectedList = this.findViewById(R.id.connected_devices_list);
         connectedList.setLayoutManager(new LinearLayoutManager(this));
@@ -116,6 +119,12 @@ public class SensorsActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onDestroy() {
+        if (searching) stopScan();
+        super.onDestroy();
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         if (searching) {
             getMenuInflater().inflate(R.menu.bluetooth_stop, menu);
@@ -130,25 +139,25 @@ public class SensorsActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_search) {
-            searchDevices();
+            startScan();
             invalidateOptionsMenu();
         }
         if (id == R.id.action_stop) {
-            bluetoothLeScanner.stopScan(scanCallback);
+            stopScan();
             invalidateOptionsMenu();
         }
         return super.onOptionsItemSelected(item);
     }
 
-    private void searchDevices() {
-        searchDevices(BluetoothCscService.SERVICE_UUID);
+    private void startScan() {
+        startScan(BluetoothCscService.SERVICE_UUID);
     }
 
-    public void searchDevices(UUID serviceId) {
-        searchDevices(new UUID[] { serviceId });
+    public void startScan(UUID serviceId) {
+        startScan(new UUID[] { serviceId });
     }
 
-    private void searchDevices(UUID[] serviceIds) {
+    private void startScan(UUID[] serviceIds) {
         List<ScanFilter> filters = new ArrayList<>();
 
         ScanFilter.Builder builder = new ScanFilter.Builder();
@@ -164,6 +173,11 @@ public class SensorsActivity extends AppCompatActivity {
         Log.i("BluetoothSearch", "LE Search Started.");
 
         searching = true;
+    }
+
+    private void stopScan() {
+        bluetoothLeScanner.stopScan(scanCallback);
+        searching = false;
     }
 
     public interface ListListener {
