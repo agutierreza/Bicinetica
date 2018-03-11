@@ -22,4 +22,5 @@
     <string name="duration">Duración</string>
     <string name="speed">Velocidad (km/h)</string>
     <string name="altitude">Altura (m)</string>
+    <string name="distance">Distancia</string>
 </resources>
