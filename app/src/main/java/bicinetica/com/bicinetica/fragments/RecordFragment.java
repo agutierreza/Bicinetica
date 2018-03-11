@@ -2,6 +2,7 @@ package bicinetica.com.bicinetica.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -10,7 +11,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.io.File;
+import java.io.FileFilter;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import bicinetica.com.bicinetica.R;
 import bicinetica.com.bicinetica.data.Record;
@@ -31,7 +37,6 @@ public class RecordFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_record_list, container, false);
 
-        // Set the adapter
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
 
@@ -40,26 +45,38 @@ public class RecordFragment extends Fragment {
 
             ArrayList<Record> items = new ArrayList<>();
 
-            Record r = new Record();
-            r.setName("Running indoor");
-            items.add(r);
+            final String name = "Cycling outdoor_";
+            final String extension = ".json";
 
-            r = new Record();
-            r.setName("Running outdoor");
-            items.add(r);
+            File[] files = Environment.getExternalStorageDirectory().listFiles(new FileFilter() {
+                @Override
+                public boolean accept(File pathname) {
+                    return pathname.getName().startsWith(name) && pathname.getName().endsWith(extension);
+                }
+            });
 
-            r = new Record();
-            r.setName("Cycling indoor");
-            items.add(r);
+            SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd_HHmmss");
 
-            r = new Record();
-            r.setName("Cycling outdoor");
-            items.add(r);
+            for (File file: files) {
+                String datetime = file.getName().substring(name.length(), file.getName().indexOf('.'));
+
+                Date date = null;
+
+                try {
+                    date = format.parse(datetime);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+                Record record = new Record();
+                record.setName("Cycling outdoor");
+                record.setDate(date);
+                items.add(record);
+            }
 
             recyclerView.setAdapter(new RecordListAdapter(items));
             recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL));
         }
-
 
         return view;
     }

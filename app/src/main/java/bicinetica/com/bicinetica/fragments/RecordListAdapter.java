@@ -10,10 +10,12 @@ import bicinetica.com.bicinetica.R;
 import bicinetica.com.bicinetica.data.Record;
 import bicinetica.com.bicinetica.fragments.RecordFragment.OnListFragmentInteractionListener;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 public class RecordListAdapter extends RecyclerView.Adapter<RecordListAdapter.RecordViewHolder> {
 
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy HH:mm");
     private final List<Record> mValues;
     private final OnListFragmentInteractionListener mListener;
 
@@ -37,7 +39,7 @@ public class RecordListAdapter extends RecyclerView.Adapter<RecordListAdapter.Re
     @Override
     public void onBindViewHolder(final RecordViewHolder holder, int position) {
 
-        holder.mContentView.setText(mValues.get(position).getName());
+        holder.mContentView.setText(mValues.get(position).getName() + " - " + dateFormat.format(mValues.get(position).getDate()));
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
