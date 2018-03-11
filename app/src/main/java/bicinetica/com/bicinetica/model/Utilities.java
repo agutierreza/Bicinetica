@@ -29,6 +29,14 @@ public final class Utilities {
         return res / items.size();
     }
 
+    public static float angularVelocity(float rpm) {
+        return (float)(2 * Math.PI * rpm / 60);
+    }
+
+    public static float linealVelocity(float rpm, float radious) {
+        return radious * angularVelocity(rpm);
+    }
+
     /**
      * Gives the best average @seg seconds for powerList
      *

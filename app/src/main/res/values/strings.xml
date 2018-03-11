@@ -18,10 +18,16 @@
     <string name="power_average_3s">Power average 3s (W)</string>
     <string name="power_average_5s">Power average 5s (W)</string>
     <string name="power_average_10s">Power average 10s (W)</string>
+    <string name="instant_power">Instant power (W)</string>
 
     <string name="duration">Duration</string>
     <string name="speed">Speed (km/h)</string>
     <string name="altitude">Altitude (m)</string>
-
     <string name="distance">Distance</string>
+    <string name="speed_rpm">Speed (rpm)</string>
+
+    <string name="ask_for_connection">Do you want to connect this device?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
 </resources>

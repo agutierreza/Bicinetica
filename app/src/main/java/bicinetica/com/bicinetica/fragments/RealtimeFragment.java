@@ -1,5 +1,12 @@
 package bicinetica.com.bicinetica.fragments;
 
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
+import android.bluetooth.BluetoothGattService;
+import android.bluetooth.BluetoothProfile;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Environment;
@@ -22,6 +29,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.UUID;
 
 import bicinetica.com.bicinetica.R;
 import bicinetica.com.bicinetica.data.Position;
@@ -30,8 +38,16 @@ import bicinetica.com.bicinetica.data.RecordMapper;
 import bicinetica.com.bicinetica.model.CyclingOutdoorPower;
 import bicinetica.com.bicinetica.model.LocationProvider;
 import bicinetica.com.bicinetica.model.Utilities;
+import bicinetica.com.bicinetica.model.bluetooth.BluetoothCpService;
+import bicinetica.com.bicinetica.model.bluetooth.BluetoothCscService;
+import bicinetica.com.bicinetica.model.bluetooth.BluetoothDevicesManager;
+import bicinetica.com.bicinetica.model.bluetooth.GattCommonDescriptors;
+import bicinetica.com.bicinetica.model.bluetooth.characteristics.CpMeasurement;
+import bicinetica.com.bicinetica.model.bluetooth.characteristics.CscMeasurement;
 
 public class RealtimeFragment extends Fragment {
+
+    private static final String TAG = RealtimeFragment.class.getSimpleName();
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
     private static final SimpleDateFormat durationFormat = new SimpleDateFormat("HH:mm:ss");
@@ -41,12 +57,14 @@ public class RealtimeFragment extends Fragment {
 
     private Button buttonStart, buttonStop;
 
-    private TextView power3, power5, power10;
-    private TextView duration, speed, altitude;
+    private TextView power3, power5, power10, powerInst;
+    private TextView duration, speed, altitude, rpm;
 
     private boolean visible = false;
     private boolean running = false;
     private long baseTime;
+
+    private float rpmValue, power;
 
     private final Runnable tickRunnable = new Runnable() {
         @Override
@@ -62,6 +80,10 @@ public class RealtimeFragment extends Fragment {
     private LocationProvider.LocationListener recordListener = new LocationProvider.LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
+            Bundle extras = new Bundle();
+            extras.putFloat("power", power);
+            extras.putFloat("rpm", rpmValue);
+            location.setExtras(extras);
             locations.add(location);
             calculatePower(record.addPosition(location));
 
@@ -118,9 +140,11 @@ public class RealtimeFragment extends Fragment {
         duration = view.findViewById(R.id.duration);
         speed = view.findViewById(R.id.speed);
         altitude = view.findViewById(R.id.altitude);
+        rpm = view.findViewById(R.id.speed_rpm);
         power3 = view.findViewById(R.id.power_3s);
         power5 = view.findViewById(R.id.power_5s);
         power10 = view.findViewById(R.id.power_10s);
+        powerInst = view.findViewById(R.id.instant_power);
 
         return view;
     }
@@ -165,6 +189,9 @@ public class RealtimeFragment extends Fragment {
         long altitudeValue = Math.round(location.getAltitude());
         altitude.setText(altitudeValue > 0 ? String.valueOf(altitudeValue) : "--");
 
+        powerInst.setText(power > 0 ? String.format("%.2f", power) : "--");
+        rpm.setText(rpmValue > 0 ? String.format("%.2f", rpmValue) : "--");
+
         updatePowerMetrics();
     }
 
@@ -195,6 +222,78 @@ public class RealtimeFragment extends Fragment {
         }
     }
 
+    private BluetoothGattCallback callback = new BluetoothGattCallback() {
+
+        private CscMeasurement lastCsc;
+
+        @Override
+        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+
+            if (newState == BluetoothProfile.STATE_CONNECTED) {
+                Log.i(TAG, "BluetoothDevice CONNECTED: " + gatt.getDevice().getAddress() + " " + gatt.getDevice().getName());
+                gatt.discoverServices();
+                connections.add(gatt);
+            }
+            else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                Log.i(TAG, "BluetoothDevice DISCONNECTED");
+                if (status == 133) {
+                    Log.i(TAG, "Many connections");
+                }
+                connections.remove(gatt);
+            }
+        }
+
+        @Override
+        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+            Log.i(TAG, "Services discovered");
+
+            enableNotifications(gatt, BluetoothCscService.SERVICE_UUID, CscMeasurement.CHARACTERISTIC_UUID);
+            enableNotifications(gatt, BluetoothCpService.SERVICE_UUID, CpMeasurement.CHARACTERISTIC_UUID);
+        }
+
+        @Override
+        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+            Log.i(TAG, "notificationreceived!");
+            if (characteristic.getUuid().equals(CscMeasurement.CHARACTERISTIC_UUID)) {
+                CscMeasurement csc = CscMeasurement.decode(characteristic);
+                if (lastCsc != null) {
+                    rpmValue = csc.getRpm(lastCsc);
+                    rpm.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            rpm.setText(rpmValue > 0 ? String.format("%.2f", rpmValue) : "--");
+                        }
+                    });
+                }
+                lastCsc = csc;
+            }
+            else if (characteristic.getUuid().equals(CpMeasurement.CHARACTERISTIC_UUID)) {
+                CpMeasurement cp = CpMeasurement.decode(characteristic);
+                power = cp.getInstantaneousPower();
+                powerInst.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        powerInst.setText(power > 0 ? String.format("%.2f", power) : "--");
+                    }
+                });
+            }
+        }
+
+        private void enableNotifications(BluetoothGatt gatt, UUID serviceUuid, UUID characteristicUuid) {
+            BluetoothGattService service =  gatt.getService(serviceUuid);
+            if (service != null) {
+                BluetoothGattCharacteristic characteristic = service.getCharacteristic(characteristicUuid);
+                if (gatt.setCharacteristicNotification(characteristic, true)) {
+                    BluetoothGattDescriptor descriptor = characteristic.getDescriptor(GattCommonDescriptors.CLIENT_CHARACTERISTIC_CONFIG);
+                    descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                    gatt.writeDescriptor(descriptor);
+                }
+            }
+        }
+    };
+
+    private List<BluetoothGatt> connections = new ArrayList<>();
+
     private void commandStart() {
         locations.clear();
 
@@ -209,6 +308,16 @@ public class RealtimeFragment extends Fragment {
         duration.postDelayed(tickRunnable, 1000);
         duration.setText("00:00:00");
 
+        for (BluetoothDevice device: BluetoothDevicesManager.getInstance().getDevices()) {
+            BluetoothGatt gatt = device.connectGatt(getContext(), false, callback);
+            if (gatt == null) {
+                Log.i(TAG, "Unable to connect GATT server");
+            }
+            else {
+                Log.i(TAG, "Trying to connect GATT server");
+            }
+        }
+
         getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
@@ -217,6 +326,10 @@ public class RealtimeFragment extends Fragment {
         duration.removeCallbacks(tickRunnable);
 
         locationProvider.unregisterListener(recordListener);
+
+        for (int i = connections.size() - 1; i >= 0; i--) {
+            connections.get(i).close();
+        }
 
         try {
             performSave();
