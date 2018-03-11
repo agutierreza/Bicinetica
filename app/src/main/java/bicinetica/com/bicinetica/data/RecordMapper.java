@@ -135,7 +135,7 @@ public class RecordMapper {
             JSONObject object = new JSONObject(value);
 
             record.setName(object.getString("name"));
-            record.setDate(new Date(object.getLong("time")));
+            record.setDate(new Date(object.getLong("date")));
 
             JSONArray array = object.getJSONArray("positions");
             for (int i = 0; i < array.length(); i++) {
