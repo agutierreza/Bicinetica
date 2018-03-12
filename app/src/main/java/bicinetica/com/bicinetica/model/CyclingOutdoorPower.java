@@ -30,7 +30,7 @@ public class CyclingOutdoorPower {
 		float avgSpeed = Utilities.average(pos2.getSpeed(), pos1.getSpeed());
 		float pKin = (float)(Math.pow(pos2.getSpeed(), 2) - Math.pow(pos1.getSpeed(), 2)) * totalMass / 2;
 		float pGravity = avgSpeed * gForce * totalMass * (float)Math.sin(beta);
-		float pDrag = 2 * (float)Math.pow(avgSpeed, 3) * drag;
+		float pDrag = (float)Math.pow(avgSpeed, 3) * drag;
 		float pRolling = avgSpeed * cRolling * gForce * totalMass * (float)Math.cos(beta);
 		float power = pKin + pGravity + pDrag + pRolling;
 
