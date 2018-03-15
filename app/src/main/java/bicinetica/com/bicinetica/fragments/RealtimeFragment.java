@@ -69,7 +69,7 @@ public class RealtimeFragment extends Fragment {
     private float rpmValue, power;
 
     private ArrayDeque<Position> buffer = new ArrayDeque<>();
-    private Position previousPosition1, previousPosition2;
+    private Position newPosition, oldPosition;
 
     private final Runnable tickRunnable = new Runnable() {
         @Override
@@ -236,26 +236,20 @@ public class RealtimeFragment extends Fragment {
             buffer.remove();
         }
         if (buffer.size() > 0) {
+            //TODO: Calculate degrees from 5s ago;
             position.setPower(CyclingOutdoorPower.calculatePower(buffer.peekLast(), position));
         }
         buffer.add(position);
     }
 
+
     private void calculatePower(Position position) {
         position = position.clone(); // Create a working copy
 
-        if (position.getAltitude() == 0 && previousPosition1 != null && previousPosition2 != null) {
-            Function<Long, Position> interpolation = Utilities.createInterpolation(previousPosition2, previousPosition1);
+        cleanAltitude(position);
 
-            Position expected = interpolation.apply(position.getTimestamp());
-            position.setAltitude(expected.getAltitude());
-            if (position.getSpeed() == 0) {
-                position.setSpeed(expected.getSpeed());
-            }
-        }
-
-        if (previousPosition1 != null) {
-            Function<Long, Position> interpolation = Utilities.createInterpolation(previousPosition1, position);
+        if (newPosition != null) {
+            Function<Long, Position> interpolation = Utilities.createInterpolation(newPosition, position);
 
             //Position aux = buffer.peekLast();
             long start = buffer.peekLast().getTimestamp() + 1000;
@@ -269,8 +263,24 @@ public class RealtimeFragment extends Fragment {
             addToBuffer(position);
         }
 
-        previousPosition2 = previousPosition1;
-        previousPosition1 = position;
+        oldPosition = newPosition;
+        newPosition = position;
+    }
+
+    /**
+     * Calculates expected altitude and speed for positions altitude missing
+     * @param position
+     */
+    private void cleanAltitude(Position position) {
+        if (position.getAltitude() == 0 && newPosition != null && oldPosition != null) {
+            Function<Long, Position> interpolation = Utilities.createInterpolation(oldPosition, newPosition);
+
+            Position expected = interpolation.apply(position.getTimestamp());
+            position.setAltitude(expected.getAltitude());
+            if (position.getSpeed() == 0) {
+                position.setSpeed(expected.getSpeed());
+            }
+        }
     }
 
     private BluetoothGattCallback callback = new BluetoothGattCallback() {
