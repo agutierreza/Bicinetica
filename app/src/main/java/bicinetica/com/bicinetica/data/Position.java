@@ -121,7 +121,7 @@ public class Position implements Cloneable {
 
     @Override
     public Position clone() {
-        Position p = new Position(this.altitude, this.longitude, this.latitude, this.speed, this.timestamp);
+        Position p = new Position(this.latitude, this.longitude, this.altitude, this.speed, this.timestamp);
         p.power = this.power;
         return p;
     }
