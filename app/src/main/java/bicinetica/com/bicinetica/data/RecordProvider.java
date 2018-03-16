@@ -72,6 +72,10 @@ public class RecordProvider {
         return items.get(i);
     }
 
+    public Record load(int i) throws IOException {
+        return RecordMapper.load(getFile(get(i)));
+    }
+
     public List<Record> getAll() {
         return items.subList(0, items.size() - 1);
     }

@@ -32,6 +32,7 @@ import bicinetica.com.bicinetica.data.RecordProvider;
 import bicinetica.com.bicinetica.model.CyclingOutdoorPower;
 import bicinetica.com.bicinetica.model.Function;
 import bicinetica.com.bicinetica.model.LocationProvider;
+import bicinetica.com.bicinetica.model.LocationProviderMock;
 import bicinetica.com.bicinetica.model.Utilities;
 import bicinetica.com.bicinetica.model.bluetooth.BluetoothCpService;
 import bicinetica.com.bicinetica.model.bluetooth.BluetoothCscService;
@@ -70,6 +71,8 @@ public class RealtimeFragment extends Fragment {
         @Override
         public void onLocationChanged(Location location) {
             Position position = record.addPosition(location);
+
+            if (!running) return;
 
             // Create a working copy
             position = position.clone();
@@ -122,6 +125,7 @@ public class RealtimeFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        //locationProvider = LocationProvider.createProvider(getActivity(), LocationProvider.MOCK_PROVIDER);
         locationProvider = LocationProvider.createProvider(getActivity(), LocationProvider.FUSED_PROVIDER);
     }
 
@@ -321,6 +325,16 @@ public class RealtimeFragment extends Fragment {
             }
             else {
                 Log.i(TAG, "Trying to connect GATT server");
+            }
+        }
+
+        if (locationProvider instanceof LocationProviderMock) {
+            LocationProviderMock mock = ((LocationProviderMock)locationProvider);
+            try {
+                mock.setRecord(RecordProvider.getInstance().load(0));
+                mock.start();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
 

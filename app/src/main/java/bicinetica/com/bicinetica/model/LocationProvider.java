@@ -1,5 +1,6 @@
 package bicinetica.com.bicinetica.model;
 
+import android.app.Activity;
 import android.content.Context;
 import android.location.Location;
 import android.location.LocationManager;
@@ -17,6 +18,7 @@ public class LocationProvider {
     public static final int GPS_PROVIDER = 0;
     public static final int NETWORK_PROVIDER = 1;
     public static final int FUSED_PROVIDER = 2;
+    public static final int MOCK_PROVIDER = 3;
 
     protected ArrayList<LocationListener> mListeners;
 
@@ -32,7 +34,7 @@ public class LocationProvider {
         mListeners.remove(listener);
     }
 
-    public static LocationProvider createProvider(Context context, int providerType)
+    public static LocationProvider createProvider(Activity context, int providerType)
     {
         switch (providerType) {
             case GPS_PROVIDER:
@@ -41,6 +43,8 @@ public class LocationProvider {
                 return new NetworkLocationProvider(context);
             case FUSED_PROVIDER:
                 return new FusedLocationProvider(context);
+            case MOCK_PROVIDER:
+                return new LocationProviderMock(context);
         }
         throw new RuntimeException();
     }
