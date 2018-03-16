@@ -229,7 +229,18 @@ public class RealtimeFragment extends Fragment {
             //TODO: Calculate degrees from 5s ago;
             Position lastPosition = buffer.last();
             Position interpolatedPosition = interpolation.apply(i);
-            interpolatedPosition.setPower(CyclingOutdoorPower.calculatePower(lastPosition, interpolatedPosition));
+
+            if (buffer.size() >= 5) {
+                Position target = buffer.peek(4);
+                float hDiff = interpolatedPosition.getAltitude() - target.getAltitude();
+                float grade = hDiff / target.getDistance(interpolatedPosition);
+
+                interpolatedPosition.setPower(CyclingOutdoorPower.calculatePower(lastPosition, interpolatedPosition, grade));
+            }
+            else {
+                interpolatedPosition.setPower(CyclingOutdoorPower.calculatePower(lastPosition, interpolatedPosition));
+            }
+
             buffer.add(interpolatedPosition);
         }
     }
