@@ -9,7 +9,6 @@ import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,9 +18,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
 
-import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -31,7 +28,7 @@ import bicinetica.com.bicinetica.R;
 import bicinetica.com.bicinetica.data.Buffer;
 import bicinetica.com.bicinetica.data.Position;
 import bicinetica.com.bicinetica.data.Record;
-import bicinetica.com.bicinetica.data.RecordMapper;
+import bicinetica.com.bicinetica.data.RecordProvider;
 import bicinetica.com.bicinetica.model.CyclingOutdoorPower;
 import bicinetica.com.bicinetica.model.Function;
 import bicinetica.com.bicinetica.model.LocationProvider;
@@ -50,8 +47,6 @@ public class RealtimeFragment extends Fragment {
     private static final String TAG = RealtimeFragment.class.getSimpleName();
 
     private static final int INTERPOLATION_STEP = 1000; // 1s
-
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd_HHmmss");
 
     private Record record;
     private Button buttonStart, buttonStop;
@@ -227,6 +222,7 @@ public class RealtimeFragment extends Fragment {
         long end = position.getTimestamp() + (INTERPOLATION_STEP - position.getTimestamp() % INTERPOLATION_STEP);
 
         for (long i = start; i <= end; i += INTERPOLATION_STEP) {
+            //TODO: Calculate degrees from 5s ago;
             Position lastPosition = buffer.last();
             Position interpolatedPosition = interpolation.apply(i);
             interpolatedPosition.setPower(CyclingOutdoorPower.calculatePower(lastPosition, interpolatedPosition));
@@ -342,24 +338,12 @@ public class RealtimeFragment extends Fragment {
         }
 
         try {
-            performSave();
+            RecordProvider.getInstance().add(record);
         } catch (IOException ex) {
             Toast.makeText(getActivity(), ex.getMessage(), Toast.LENGTH_LONG).show();
             Log.e("MAPPER", ex.getMessage());
         }
 
         getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-    }
-
-    private void performSave() throws IOException {
-        saveRecord(record);
-    }
-
-    private static void saveRecord(Record record) throws IOException {
-        File file = Environment.getExternalStorageDirectory();
-        file.mkdirs();
-        file = new File(file, String.format("%s_%s.json", record.getName(), DATE_FORMAT.format(record.getDate())));
-
-        RecordMapper.save(record, file);
     }
 }

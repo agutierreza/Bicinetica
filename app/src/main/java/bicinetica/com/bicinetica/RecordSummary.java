@@ -10,6 +10,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
@@ -38,6 +39,7 @@ import java.util.TimeZone;
 import bicinetica.com.bicinetica.data.Position;
 import bicinetica.com.bicinetica.data.Record;
 import bicinetica.com.bicinetica.data.RecordMapper;
+import bicinetica.com.bicinetica.data.RecordProvider;
 import bicinetica.com.bicinetica.model.Utilities;
 
 public class RecordSummary extends AppCompatActivity implements OnMapReadyCallback {
@@ -75,6 +77,12 @@ public class RecordSummary extends AppCompatActivity implements OnMapReadyCallba
         }
         catch (IOException e) {
             e.printStackTrace();
+        }
+
+        if (record == null || record.getLastPosition() == null) {
+            Toast.makeText(getApplicationContext(), "Invalid file. Deleting record...", Toast.LENGTH_LONG).show();
+            OnDelete();
+            return;
         }
 
         getSupportActionBar().setTitle(record.getName());
@@ -126,9 +134,7 @@ public class RecordSummary extends AppCompatActivity implements OnMapReadyCallba
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.delete) {
-            File f = new File(filename);
-            f.delete();
-            onBackPressed();
+            OnDelete();
             return true;
         }
         else if (id == R.id.share) {
@@ -145,6 +151,11 @@ public class RecordSummary extends AppCompatActivity implements OnMapReadyCallba
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void OnDelete() {
+        RecordProvider.getInstance().remove(record);
+        onBackPressed();
     }
 
     public void onMapReady(GoogleMap googleMap) {

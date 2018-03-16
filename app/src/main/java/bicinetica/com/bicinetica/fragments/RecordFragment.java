@@ -3,7 +3,6 @@ package bicinetica.com.bicinetica.fragments;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -12,24 +11,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 import bicinetica.com.bicinetica.R;
 import bicinetica.com.bicinetica.RecordSummary;
 import bicinetica.com.bicinetica.data.Record;
+import bicinetica.com.bicinetica.data.RecordProvider;
 
-public class RecordFragment extends Fragment {
+public class RecordFragment extends Fragment implements RecordProvider.OnListChanged<Record> {
 
     private RecordListAdapter adapter;
-    private List<Record> items;
+    private RecyclerView recyclerView;
 
-    private OnListFragmentInteractionListener mListener;
+    private OnRecordClicked mListener;
     private static final SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd_HHmmss");
 
     public RecordFragment() {
@@ -47,78 +41,36 @@ public class RecordFragment extends Fragment {
         if (view instanceof RecyclerView) {
             final Context context = view.getContext();
 
-            RecyclerView recyclerView = (RecyclerView) view;
+            recyclerView = (RecyclerView) view;
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
-
-            items = new ArrayList<>();
-
-            final String name = "Cycling outdoor_";
-            final String extension = ".json";
-
-            File[] files = Environment.getExternalStorageDirectory().listFiles(new FileFilter() {
+            adapter = new RecordListAdapter(new OnRecordClicked() {
                 @Override
-                public boolean accept(File pathname) {
-                    return pathname.getName().startsWith(name) && pathname.getName().endsWith(extension);
-                }
-            });
-
-
-            for (File file: files) {
-                String datetime = file.getName().substring(name.length(), file.getName().indexOf('.'));
-
-                Date date = null;
-
-                try {
-                    date = format.parse(datetime);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-
-                Record record = new Record();
-                record.setName("Cycling outdoor");
-                record.setDate(date);
-                items.add(record);
-            }
-
-            adapter = new RecordListAdapter(items, new OnListFragmentInteractionListener() {
-                @Override
-                public void onListFragmentInteraction(Record item) {
-
-                    File file = Environment.getExternalStorageDirectory();
-                    file = new File(file, String.format("%s_%s.json", item.getName(), format.format(item.getDate())));
-
+                public void onRecordClicked(Record item) {
                     Intent intent = new Intent(context, RecordSummary.class);
-                    intent.putExtra("file_name", file.getAbsolutePath());
+                    intent.putExtra("file_name", RecordProvider.getInstance().getPath(item));
                     context.startActivity(intent);
                 }
             });
             recyclerView.setAdapter(adapter);
             recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL));
+
+            RecordProvider.getInstance().suscribe(this);
         }
 
         return view;
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-
-        for (int i = items.size() -  1; i >= 0; i--) {
-            Record item = items.get(i);
-            File file = Environment.getExternalStorageDirectory();
-            file = new File(file, String.format("%s_%s.json", item.getName(), format.format(item.getDate())));
-            if (!file.exists()) {
-                items.remove(i);
-                adapter.notifyItemRangeRemoved(i, 1);
-            }
-        }
+    public void onDestroy() {
+        super.onDestroy();
+        RecordProvider.getInstance().unsuscribe(this);
     }
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnListFragmentInteractionListener) {
-            mListener = (OnListFragmentInteractionListener) context;
+        if (context instanceof OnRecordClicked) {
+            mListener = (OnRecordClicked) context;
         }
     }
 
@@ -128,7 +80,18 @@ public class RecordFragment extends Fragment {
         mListener = null;
     }
 
-    public interface OnListFragmentInteractionListener {
-        void onListFragmentInteraction(Record item);
+    @Override
+    public void onItemAdded(int index, Record item) {
+        adapter.notifyItemInserted(index);
+        recyclerView.scrollToPosition(0);
+    }
+
+    @Override
+    public void onItemRemoved(int index) {
+        adapter.notifyItemRangeRemoved(index, 1);
+    }
+
+    public interface OnRecordClicked {
+        void onRecordClicked(Record item);
     }
 }

@@ -8,24 +8,19 @@ import android.widget.TextView;
 
 import bicinetica.com.bicinetica.R;
 import bicinetica.com.bicinetica.data.Record;
-import bicinetica.com.bicinetica.fragments.RecordFragment.OnListFragmentInteractionListener;
+import bicinetica.com.bicinetica.data.RecordProvider;
+import bicinetica.com.bicinetica.fragments.RecordFragment.OnRecordClicked;
 
 import java.text.SimpleDateFormat;
-import java.util.List;
 
 public class RecordListAdapter extends RecyclerView.Adapter<RecordListAdapter.RecordViewHolder> {
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy HH:mm");
-    private final List<Record> mValues;
-    private final OnListFragmentInteractionListener mListener;
+    private final OnRecordClicked mListener;
 
-    public RecordListAdapter(List<Record> items) {
-        mValues = items;
-        mListener = null;
-    }
+    private RecordProvider provider = RecordProvider.getInstance();
 
-    public RecordListAdapter(List<Record> items, OnListFragmentInteractionListener listener) {
-        mValues = items;
+    public RecordListAdapter(OnRecordClicked listener) {
         mListener = listener;
     }
 
@@ -38,16 +33,12 @@ public class RecordListAdapter extends RecyclerView.Adapter<RecordListAdapter.Re
 
     @Override
     public void onBindViewHolder(final RecordViewHolder holder, int position) {
-
-        Record item = mValues.get(position);
-        holder.mItem = item;
-        holder.mContentView.setText(item.getName() + " - " + dateFormat.format(item.getDate()));
-
+        holder.setRecord(provider.get(position));
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (null != mListener) {
-                    mListener.onListFragmentInteraction(holder.mItem);
+                    mListener.onRecordClicked(holder.getRecord());
                 }
             }
         });
@@ -55,18 +46,27 @@ public class RecordListAdapter extends RecyclerView.Adapter<RecordListAdapter.Re
 
     @Override
     public int getItemCount() {
-        return mValues.size();
+        return provider.getItemCount();
     }
 
     public class RecordViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
         public final TextView mContentView;
-        public Record mItem;
+        private Record record;
 
         public RecordViewHolder(View view) {
             super(view);
             mView = view;
             mContentView = view.findViewById(R.id.content);
+        }
+
+        public Record getRecord() {
+            return record;
+        }
+
+        public void setRecord(Record record) {
+            this.record = record;
+            mContentView.setText(record.getName() + " - " + dateFormat.format(record.getDate()));
         }
     }
 }

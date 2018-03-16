@@ -38,24 +38,6 @@ public class Record {
         return positions.isEmpty() ? null : positions.get(positions.size() - 1);
     }
 
-    public List<Position> getLastPositions(int n) {
-        if (positions.size() < n) {
-            throw new RuntimeException();
-        }
-
-        return positions.subList(positions.size() - n, positions.size());
-    }
-
-    public Position getPreviousPosition(Position position) {
-        int i = positions.indexOf(position);
-
-        if (i == -1) {
-            throw new RuntimeException();
-        }
-
-        return positions.get(i - 1);
-    }
-
     public float getDistance() {
         float distance = 0;
         for (int i = 0; i < positions.size() - 2; i++) {
@@ -66,22 +48,6 @@ public class Record {
         return distance;
     }
 
-    public void addPosition(Position position) {
-        positions.add(position);
-        /*
-        Position lastPosition = getLastPosition();
-        if (lastPosition == null) {
-            positions.add(position);
-        }
-        else if (position.getTimestamp() - lastPosition.getTimestamp() > 1000) {
-            // TODO: Interpolate
-        }
-        else {
-            positions.add(position);
-        }
-        */
-    }
-
     public Position addPosition(Location location) {
         if (this.positions.isEmpty()) {
             this.date = new Date(location.getTime());
@@ -89,7 +55,25 @@ public class Record {
         Position position = new Position((float)location.getLatitude(), (float)location.getLongitude(), (float)location.getAltitude());
         position.setSpeed(location.getSpeed());
         position.setTimestamp(location.getTime() - date.getTime());
-        addPosition(position);
+        positions.add(position);
         return position;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 42;
+        int aux = date.getYear();
+        result = 37 * result + ((int)(aux ^ (aux >>> 32)));
+        aux = date.getMonth();
+        result = 37 * result + ((int)(aux ^ (aux >>> 32)));
+        aux = date.getDay();
+        result = 37 * result + ((int)(aux ^ (aux >>> 32)));
+        aux = date.getHours();
+        result = 37 * result + ((int)(aux ^ (aux >>> 32)));
+        aux = date.getMinutes();
+        result = 37 * result + ((int)(aux ^ (aux >>> 32)));
+        aux = date.getSeconds();
+        result = 37 * result + ((int)(aux ^ (aux >>> 32)));
+        return result;
     }
 }
