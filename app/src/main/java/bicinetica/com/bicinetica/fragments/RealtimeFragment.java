@@ -10,7 +10,6 @@ import android.bluetooth.BluetoothProfile;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,21 +17,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 import java.util.UUID;
 
 import bicinetica.com.bicinetica.R;
+import bicinetica.com.bicinetica.data.Buffer;
 import bicinetica.com.bicinetica.data.Position;
 import bicinetica.com.bicinetica.data.Record;
 import bicinetica.com.bicinetica.data.RecordMapper;
@@ -53,11 +49,11 @@ public class RealtimeFragment extends Fragment {
 
     private static final String TAG = RealtimeFragment.class.getSimpleName();
 
+    private static final int INTERPOLATION_STEP = 1000; // 1s
+
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
-    private static final SimpleDateFormat durationFormat = new SimpleDateFormat("HH:mm:ss");
 
     private Record record;
-    private List<Location> locations = new ArrayList<>();
 
     private Button buttonStart, buttonStop;
 
@@ -70,23 +66,19 @@ public class RealtimeFragment extends Fragment {
 
     private float rpmValue, power;
 
-    private ArrayDeque<Position> buffer = new ArrayDeque<>();
+    private Buffer<Position> buffer = new Buffer<>(10);
     private Position newPosition, oldPosition;
 
     private LocationProvider locationProvider;
     private LocationProvider.LocationListener recordListener = new LocationProvider.LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
-            Bundle extras = new Bundle();
-            extras.putFloat("power", power);
-            extras.putFloat("rpm", rpmValue);
-            location.setExtras(extras);
-            locations.add(location);
 
-            calculatePower(record.addPosition(location));
+            Position position = record.addPosition(location);
+            calculatePower(position);
 
             if (visible) {
-                updateView(location);
+                updateView(position);
             }
         }
     };
@@ -118,8 +110,6 @@ public class RealtimeFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        durationFormat.setTimeZone(TimeZone.getTimeZone("GTM"));
 
         locationProvider = LocationProvider.createProvider(getActivity(), LocationProvider.FUSED_PROVIDER);
     }
@@ -154,7 +144,7 @@ public class RealtimeFragment extends Fragment {
         visible = true;
 
         if (running) {
-            updateView(locations.get(locations.size() - 1));
+            updateView(newPosition);
         }
     }
 
@@ -175,7 +165,7 @@ public class RealtimeFragment extends Fragment {
         super.onDestroy();
     }
 
-    private void updateView(Location location) {
+    private void updateView(Position location) {
         speed.setValue(location.getSpeed() * 3.6f);
         altitude.setValue(Math.round(location.getAltitude()));
 
@@ -185,44 +175,21 @@ public class RealtimeFragment extends Fragment {
         updatePowerMetrics();
     }
 
-    private List<Position> getLastPositions(int n) {
-        List<Position> res = new ArrayList<>();
-
-        Object[] arr = buffer.toArray();
-        for (int i = arr.length - 1; i >= arr.length - n; i--) {
-            res.add((Position)arr[i]);
-        }
-
-        return res;
-    }
-
     private void updatePowerMetrics() {
         int currentSize = buffer.size();
 
         if (currentSize >= 3) {
-            power3.setValue(Utilities.powerAverage(getLastPositions(3)));
+            power3.setValue(Utilities.powerAverage(buffer.last(3)));
 
             if (currentSize >= 5) {
-                power5.setValue(Utilities.powerAverage(getLastPositions(5)));
+                power5.setValue(Utilities.powerAverage(buffer.last(5)));
 
                 if (currentSize >= 10) {
-                    power10.setValue(Utilities.powerAverage(getLastPositions(10)));
+                    power10.setValue(Utilities.powerAverage(buffer.last(10)));
                 }
             }
         }
     }
-
-    private void addToBuffer(Position position) {
-        if (buffer.size() == 10) {
-            buffer.remove();
-        }
-        if (buffer.size() > 0) {
-            //TODO: Calculate degrees from 5s ago;
-            position.setPower(CyclingOutdoorPower.calculatePower(buffer.peekLast(), position));
-        }
-        buffer.add(position);
-    }
-
 
     private void calculatePower(Position position) {
         position = position.clone(); // Create a working copy
@@ -232,16 +199,18 @@ public class RealtimeFragment extends Fragment {
         if (newPosition != null) {
             Function<Long, Position> interpolation = Utilities.createInterpolation(newPosition, position);
 
-            //Position aux = buffer.peekLast();
-            long start = buffer.peekLast().getTimestamp() + 1000;
-            long end = position.getTimestamp() + (1000 - position.getTimestamp() % 1000);
+            long start = buffer.last().getTimestamp() + INTERPOLATION_STEP;
+            long end = position.getTimestamp() + (INTERPOLATION_STEP - position.getTimestamp() % INTERPOLATION_STEP);
 
             for (long i = start; i <= end; i += 1000) {
-                addToBuffer(interpolation.apply(i));
+                Position lastPosition = buffer.last();
+                Position interpolatedPosition = interpolation.apply(i);
+                interpolatedPosition.setPower(CyclingOutdoorPower.calculatePower(lastPosition, interpolatedPosition));
+                buffer.add(interpolatedPosition);
             }
         }
         else {
-            addToBuffer(position);
+            buffer.add(position);
         }
 
         oldPosition = newPosition;
@@ -337,8 +306,6 @@ public class RealtimeFragment extends Fragment {
     private List<BluetoothGatt> connections = new ArrayList<>();
 
     private void commandStart() {
-        locations.clear();
-
         record = new Record();
         record.setDate(Calendar.getInstance().getTime());
         record.setName("Cycling outdoor");
@@ -383,21 +350,12 @@ public class RealtimeFragment extends Fragment {
 
     private void performSave() throws IOException {
         saveRecord(record);
-        saveRecord(locations, record.getName() + " raw data_" + dateFormat.format(record.getDate()));
     }
 
     private static void saveRecord(Record record) throws IOException {
         File file = Environment.getExternalStorageDirectory();
         file.mkdirs();
         file = new File(file, String.format("%s_%s.json", record.getName(), dateFormat.format(record.getDate())));
-
-        RecordMapper.save(record, file);
-    }
-
-    private static void saveRecord(List<Location> record, String name) throws IOException {
-        File file = Environment.getExternalStorageDirectory();
-        file.mkdirs();
-        file = new File(file, String.format("%s.json", name));
 
         RecordMapper.save(record, file);
     }
