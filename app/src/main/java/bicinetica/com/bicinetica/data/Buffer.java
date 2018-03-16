@@ -21,11 +21,6 @@ public class Buffer<T> extends AbstractCollection<T> {
         if (innerQueue.size() == capacity) {
             innerQueue.remove();
         }
-        /*
-        if (innerQueue.size() > 0) {
-            //TODO: Calculate degrees from 5s ago;
-            position.setPower(CyclingOutdoorPower.calculatePower(innerQueue.peekLast(), t));
-        }*/
         return innerQueue.add(t);
     }
 
@@ -54,4 +49,12 @@ public class Buffer<T> extends AbstractCollection<T> {
         return innerQueue.peekLast();
     }
 
+    public T peek() {
+        return innerQueue.peekLast();
+    }
+
+    public T peek(int n) {
+        Object[] arr = innerQueue.toArray();
+        return (T)arr[arr.length - n - 1];
+    }
 }
