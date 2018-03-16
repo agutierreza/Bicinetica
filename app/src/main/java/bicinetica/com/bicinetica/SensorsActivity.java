@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import bicinetica.com.bicinetica.model.bluetooth.BluetoothCpService;
 import bicinetica.com.bicinetica.model.bluetooth.BluetoothCscService;
 import bicinetica.com.bicinetica.model.bluetooth.BluetoothDevicesManager;
 
@@ -162,15 +163,24 @@ public class SensorsActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void startScan() {
-        startScan(BluetoothCscService.SERVICE_UUID);
+    public void startScan() {
+        startScan(BluetoothCscService.SERVICE_UUID,
+                BluetoothCpService.SERVICE_UUID);
     }
 
     public void startScan(UUID serviceId) {
         startScan(new UUID[] { serviceId });
     }
 
-    private void startScan(UUID[] serviceIds) {
+    public void startScan(UUID... serviceIds) {
+        List<UUID> ids = new ArrayList<>();
+        for (UUID id : serviceIds) {
+            ids.add(id);
+        }
+        startScan(ids);
+    }
+
+    public void startScan(Iterable<UUID> serviceIds) {
         List<ScanFilter> filters = new ArrayList<>();
 
         ScanFilter.Builder builder = new ScanFilter.Builder();
