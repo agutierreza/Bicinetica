@@ -51,10 +51,9 @@ public class RealtimeFragment extends Fragment {
 
     private static final int INTERPOLATION_STEP = 1000; // 1s
 
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd_HHmmss");
 
     private Record record;
-
     private Button buttonStart, buttonStop;
 
     private NumberView power3, power5, power10, powerInst;
@@ -69,17 +68,34 @@ public class RealtimeFragment extends Fragment {
     private Buffer<Position> buffer = new Buffer<>(10);
     private Position newPosition, oldPosition;
 
+    private List<BluetoothGatt> connections = new ArrayList<>();
+
     private LocationProvider locationProvider;
     private LocationProvider.LocationListener recordListener = new LocationProvider.LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
-
             Position position = record.addPosition(location);
-            calculatePower(position);
+
+            // Create a working copy
+            position = position.clone();
+
+            if (position.getAltitude() == 0 && newPosition != null && oldPosition != null) {
+                softenAltitude(position);
+            }
+
+            if (newPosition != null) {
+                interpolatePositions(position);
+            }
+            else {
+                buffer.add(position);
+            }
 
             if (visible) {
                 updateView(position);
             }
+
+            oldPosition = newPosition;
+            newPosition = position;
         }
     };
 
@@ -157,7 +173,6 @@ public class RealtimeFragment extends Fragment {
 
     @Override
     public void onDestroy() {
-
         if (running) {
             this.commandStop();
         }
@@ -191,45 +206,31 @@ public class RealtimeFragment extends Fragment {
         }
     }
 
-    private void calculatePower(Position position) {
-        position = position.clone(); // Create a working copy
-
-        cleanAltitude(position);
-
-        if (newPosition != null) {
-            Function<Long, Position> interpolation = Utilities.createInterpolation(newPosition, position);
-
-            long start = buffer.last().getTimestamp() + INTERPOLATION_STEP;
-            long end = position.getTimestamp() + (INTERPOLATION_STEP - position.getTimestamp() % INTERPOLATION_STEP);
-
-            for (long i = start; i <= end; i += 1000) {
-                Position lastPosition = buffer.last();
-                Position interpolatedPosition = interpolation.apply(i);
-                interpolatedPosition.setPower(CyclingOutdoorPower.calculatePower(lastPosition, interpolatedPosition));
-                buffer.add(interpolatedPosition);
-            }
-        }
-        else {
-            buffer.add(position);
-        }
-
-        oldPosition = newPosition;
-        newPosition = position;
-    }
-
     /**
-     * Calculates expected altitude and speed for positions altitude missing
+     * Calculates expected altitude and speed for positions with altitude missing.
      * @param position
      */
-    private void cleanAltitude(Position position) {
-        if (position.getAltitude() == 0 && newPosition != null && oldPosition != null) {
-            Function<Long, Position> interpolation = Utilities.createInterpolation(oldPosition, newPosition);
+    private void softenAltitude(Position position) {
+        Function<Long, Position> interpolation = Utilities.createInterpolation(oldPosition, newPosition);
 
-            Position expected = interpolation.apply(position.getTimestamp());
-            position.setAltitude(expected.getAltitude());
-            if (position.getSpeed() == 0) {
-                position.setSpeed(expected.getSpeed());
-            }
+        Position expected = interpolation.apply(position.getTimestamp());
+        position.setAltitude(expected.getAltitude());
+        if (position.getSpeed() == 0) {
+            position.setSpeed(expected.getSpeed());
+        }
+    }
+
+    private void interpolatePositions(Position position) {
+        Function<Long, Position> interpolation = Utilities.createInterpolation(newPosition, position);
+
+        long start = buffer.last().getTimestamp() + INTERPOLATION_STEP;
+        long end = position.getTimestamp() + (INTERPOLATION_STEP - position.getTimestamp() % INTERPOLATION_STEP);
+
+        for (long i = start; i <= end; i += INTERPOLATION_STEP) {
+            Position lastPosition = buffer.last();
+            Position interpolatedPosition = interpolation.apply(i);
+            interpolatedPosition.setPower(CyclingOutdoorPower.calculatePower(lastPosition, interpolatedPosition));
+            buffer.add(interpolatedPosition);
         }
     }
 
@@ -264,7 +265,7 @@ public class RealtimeFragment extends Fragment {
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            Log.i(TAG, "notificationreceived!");
+            Log.i(TAG, "Notification received");
             if (characteristic.getUuid().equals(CscMeasurement.CHARACTERISTIC_UUID)) {
                 CscMeasurement csc = CscMeasurement.decode(characteristic);
                 if (lastCsc != null) {
@@ -303,9 +304,11 @@ public class RealtimeFragment extends Fragment {
         }
     };
 
-    private List<BluetoothGatt> connections = new ArrayList<>();
-
     private void commandStart() {
+        newPosition = null;
+        oldPosition = null;
+        buffer.clear();
+
         record = new Record();
         record.setDate(Calendar.getInstance().getTime());
         record.setName("Cycling outdoor");
@@ -355,7 +358,7 @@ public class RealtimeFragment extends Fragment {
     private static void saveRecord(Record record) throws IOException {
         File file = Environment.getExternalStorageDirectory();
         file.mkdirs();
-        file = new File(file, String.format("%s_%s.json", record.getName(), dateFormat.format(record.getDate())));
+        file = new File(file, String.format("%s_%s.json", record.getName(), DATE_FORMAT.format(record.getDate())));
 
         RecordMapper.save(record, file);
     }
