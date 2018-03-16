@@ -46,6 +46,8 @@ import bicinetica.com.bicinetica.model.bluetooth.BluetoothDevicesManager;
 import bicinetica.com.bicinetica.model.bluetooth.GattCommonDescriptors;
 import bicinetica.com.bicinetica.model.bluetooth.characteristics.CpMeasurement;
 import bicinetica.com.bicinetica.model.bluetooth.characteristics.CscMeasurement;
+import bicinetica.com.bicinetica.widgets.ChronometerView;
+import bicinetica.com.bicinetica.widgets.NumberView;
 
 public class RealtimeFragment extends Fragment {
 
@@ -59,27 +61,17 @@ public class RealtimeFragment extends Fragment {
 
     private Button buttonStart, buttonStop;
 
-    private TextView power3, power5, power10, powerInst;
-    private TextView duration, speed, altitude, rpm;
+    private NumberView power3, power5, power10, powerInst;
+    private NumberView speed, altitude, rpm;
+    private ChronometerView duration;
 
     private boolean visible = false;
     private boolean running = false;
-    private long baseTime;
 
     private float rpmValue, power;
 
     private ArrayDeque<Position> buffer = new ArrayDeque<>();
     private Position newPosition, oldPosition;
-
-    private final Runnable tickRunnable = new Runnable() {
-        @Override
-        public void run() {
-            if (running) {
-                duration.setText(durationFormat.format(new Date(SystemClock.elapsedRealtime() - baseTime)));
-                duration.postDelayed(tickRunnable, 1000);
-            }
-        }
-    };
 
     private LocationProvider locationProvider;
     private LocationProvider.LocationListener recordListener = new LocationProvider.LocationListener() {
@@ -162,7 +154,6 @@ public class RealtimeFragment extends Fragment {
         visible = true;
 
         if (running) {
-            duration.post(tickRunnable);
             updateView(locations.get(locations.size() - 1));
         }
     }
@@ -172,10 +163,6 @@ public class RealtimeFragment extends Fragment {
         super.onPause();
 
         visible = false;
-
-        if (running) {
-            duration.removeCallbacks(tickRunnable);
-        }
     }
 
     @Override
@@ -189,14 +176,11 @@ public class RealtimeFragment extends Fragment {
     }
 
     private void updateView(Location location) {
-        float speedValue = location.getSpeed() * 3.6f;
-        speed.setText(speedValue > 0 ? String.format("%.2f", speedValue) : "--");
+        speed.setValue(location.getSpeed() * 3.6f);
+        altitude.setValue(Math.round(location.getAltitude()));
 
-        long altitudeValue = Math.round(location.getAltitude());
-        altitude.setText(altitudeValue > 0 ? String.valueOf(altitudeValue) : "--");
-
-        powerInst.setText(power > 0 ? String.format("%.2f", power) : "--");
-        rpm.setText(rpmValue > 0 ? String.format("%.2f", rpmValue) : "--");
+        powerInst.setValue(power);
+        rpm.setValue(rpmValue);
 
         updatePowerMetrics();
     }
@@ -216,16 +200,13 @@ public class RealtimeFragment extends Fragment {
         int currentSize = buffer.size();
 
         if (currentSize >= 3) {
-            float average = Utilities.powerAverage(getLastPositions(3));
-            power3.setText(average > 0 ? String.format("%.2f", average) : "--");
+            power3.setValue(Utilities.powerAverage(getLastPositions(3)));
 
             if (currentSize >= 5) {
-                average = Utilities.powerAverage(getLastPositions(5));
-                power5.setText(average > 0 ? String.format("%.2f", average) : "--");
+                power5.setValue(Utilities.powerAverage(getLastPositions(5)));
 
                 if (currentSize >= 10) {
-                    average = Utilities.powerAverage(getLastPositions(10));
-                    power10.setText(average > 0 ? String.format("%.2f", average) : "--");
+                    power10.setValue(Utilities.powerAverage(getLastPositions(10)));
                 }
             }
         }
@@ -365,9 +346,7 @@ public class RealtimeFragment extends Fragment {
         locationProvider.registerListener(recordListener);
 
         running = true;
-        baseTime = SystemClock.elapsedRealtime();
-        duration.postDelayed(tickRunnable, 1000);
-        duration.setText("00:00:00");
+        duration.restart();
 
         for (BluetoothDevice device: BluetoothDevicesManager.getInstance().getDevices()) {
             BluetoothGatt gatt = device.connectGatt(getContext(), false, callback);
@@ -384,7 +363,7 @@ public class RealtimeFragment extends Fragment {
 
     private void commandStop() {
         running = false;
-        duration.removeCallbacks(tickRunnable);
+        duration.stop();
 
         locationProvider.unregisterListener(recordListener);
 
