@@ -28,6 +28,16 @@ public class SensorProvider extends ProviderBase<SensorData> {
         }
     }
 
+    @Override
+    public int findIndex(SensorData item) {
+        for (int i = 0; i < getItemCount(); i++) {
+            if (item.getAddress().equals(get(i).getAddress())) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public void save() throws IOException {
         SensorMapper.save(getAll(), file);
     }

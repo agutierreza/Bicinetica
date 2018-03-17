@@ -92,6 +92,16 @@ public class RecordProvider extends ProviderBase<Record> {
         super.remove(record);
     }
 
+    @Override
+    public int findIndex(Record item) {
+        for (int i = 0; i < getItemCount(); i++) {
+            if (item.getDate().equals(get(i).getDate())) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public String getPath(Record item) {
         return getFile(item).getAbsolutePath();
     }

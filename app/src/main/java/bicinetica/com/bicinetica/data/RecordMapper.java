@@ -151,8 +151,10 @@ public final class RecordMapper {
         try {
             JSONObject object = new JSONObject(convertStreamToString(reader));
 
+            long timestamp = object.getLong(DATE_TAG);
+            timestamp -= timestamp % 1000;
             record.setName(object.getString(NAME_TAG));
-            record.setDate(new Date(object.getLong(DATE_TAG)));
+            record.setDate(new Date(timestamp));
 
             JSONArray array = object.getJSONArray(POSITIONS_TAG);
             for (int i = 0; i < array.length(); i++) {

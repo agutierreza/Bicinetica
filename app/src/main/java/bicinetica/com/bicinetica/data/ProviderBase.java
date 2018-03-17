@@ -3,7 +3,7 @@ package bicinetica.com.bicinetica.data;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProviderBase<T> {
+public abstract class ProviderBase<T> {
     private List<T> items = new ArrayList<>();
 
     private List<OnListChanged<T>> listeners = new ArrayList<>();
@@ -59,14 +59,7 @@ public class ProviderBase<T> {
         listeners.remove(listener);
     }
 
-    private int findIndex(T r) {
-        for (int i = 0; i < items.size(); i++) {
-            if (get(i).hashCode() == r.hashCode()) {
-                return i;
-            }
-        }
-        return -1;
-    }
+    public abstract int findIndex(T item);
 
     public interface OnListChanged<T> {
         void onItemAdded(int index, T item);

@@ -58,22 +58,4 @@ public class Record {
         positions.add(position);
         return position;
     }
-
-    @Override
-    public int hashCode() {
-        int result = 42;
-        int aux = date.getYear();
-        result = 37 * result + ((int)(aux ^ (aux >>> 32)));
-        aux = date.getMonth();
-        result = 37 * result + ((int)(aux ^ (aux >>> 32)));
-        aux = date.getDay();
-        result = 37 * result + ((int)(aux ^ (aux >>> 32)));
-        aux = date.getHours();
-        result = 37 * result + ((int)(aux ^ (aux >>> 32)));
-        aux = date.getMinutes();
-        result = 37 * result + ((int)(aux ^ (aux >>> 32)));
-        aux = date.getSeconds();
-        result = 37 * result + ((int)(aux ^ (aux >>> 32)));
-        return result;
-    }
 }
