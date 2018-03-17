@@ -1,7 +1,6 @@
 package bicinetica.com.bicinetica.data;
 
 import android.location.Location;
-import android.os.Bundle;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -14,13 +13,24 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.Writer;
 import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
-public class RecordMapper {
+public final class RecordMapper {
+
+    private static final String NAME_TAG = "name";
+    private static final String DATE_TAG = "date";
+    private static final String POSITIONS_TAG = "positions";
+
+    private static final String TIME_TAG = "time";
+    private static final String LATITUDE_TAG = "latitude";
+    private static final String LONGITUDE_TAG = "longitude";
+    private static final String ALTITUDE_TAG = "altitude";
+    private static final String SPEED_TAG = "speed";
+    private static final String POWER_TAG = "power";
 
     public static void save(Record record, String filePath) throws IOException {
         save(record, new File(filePath));
@@ -35,8 +45,13 @@ public class RecordMapper {
         writer.close();
     }
 
-    public static void save(Record record, OutputStreamWriter streamWriter) throws IOException {
-        streamWriter.write(createJson(record).toString());
+    public static void save(Record record, Writer streamWriter) throws IOException {
+        try {
+            JSONObject json = createJson(record);
+            streamWriter.write(json.toString());
+        } catch (JSONException e) {
+            throw new IOException("Unable to create JSON format.", e);
+        }
     }
 
     public static void save(List<Location> record, String filePath) throws IOException {
@@ -52,34 +67,27 @@ public class RecordMapper {
         writer.close();
     }
 
-    public static void save(List<Location> record, OutputStreamWriter streamWriter) throws IOException {
+    public static void save(List<Location> record, Writer streamWriter) throws IOException {
         streamWriter.write(createJson(record).toString());
     }
 
-    private static JSONObject createJson(Record record) {
+    private static JSONObject createJson(Record record) throws JSONException {
         JSONObject base = new JSONObject();
 
-        try
-        {
-            base.put("name", record.getName())
-                    .put("date", record.getDate().getTime());
+        base.put(NAME_TAG, record.getName())
+                .put(DATE_TAG, record.getDate().getTime());
 
-            JSONArray positions = new JSONArray();
-            for (Position position : record.getPositions()) {
-                positions.put(new JSONObject()
-                        .put("time", position.getTimestamp())
-                        .put("latitude", position.getLatitude())
-                        .put("longitude", position.getLongitude())
-                        .put("altitude", position.getAltitude())
-                        .put("speed", position.getSpeed())
-                        .put("power", position.getPower()));
-            }
-            base.put("positions", positions);
+        JSONArray positions = new JSONArray();
+        for (Position position : record.getPositions()) {
+            positions.put(new JSONObject()
+                    .put(TIME_TAG, position.getTimestamp())
+                    .put(LATITUDE_TAG, position.getLatitude())
+                    .put(LONGITUDE_TAG, position.getLongitude())
+                    .put(ALTITUDE_TAG, position.getAltitude())
+                    .put(SPEED_TAG, position.getSpeed())
+                    .put(POWER_TAG, position.getPower()));
         }
-        catch (JSONException ex)
-        {
-            Log.e("MAPPER", ex.getMessage());
-        }
+        base.put(POSITIONS_TAG, positions);
 
         return base;
     }
@@ -137,34 +145,33 @@ public class RecordMapper {
         return res;
     }
 
-    public static Record load(InputStreamReader reader) {
-        String value = convertStreamToString(reader);
-
+    public static Record load(Reader reader) throws IOException {
         Record record = new Record();
+
         try {
-            JSONObject object = new JSONObject(value);
+            JSONObject object = new JSONObject(convertStreamToString(reader));
 
-            record.setName(object.getString("name"));
-            record.setDate(new Date(object.getLong("date")));
+            record.setName(object.getString(NAME_TAG));
+            record.setDate(new Date(object.getLong(DATE_TAG)));
 
-            JSONArray array = object.getJSONArray("positions");
+            JSONArray array = object.getJSONArray(POSITIONS_TAG);
             for (int i = 0; i < array.length(); i++) {
                 JSONObject item = array.getJSONObject(i);
                 record.getPositions().add(new Position(
-                        (float)item.getDouble("latitude"),
-                        (float)item.getDouble("longitude"),
-                        (float)item.getDouble("altitude"),
-                        (float)item.getDouble("speed"),
-                        item.getLong("time")));
+                        (float)item.getDouble(LATITUDE_TAG),
+                        (float)item.getDouble(LONGITUDE_TAG),
+                        (float)item.getDouble(ALTITUDE_TAG),
+                        (float)item.getDouble(SPEED_TAG),
+                        item.getLong(TIME_TAG)));
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
 
-        return record;
+            return record;
+        } catch (JSONException e) {
+            throw new IOException("Unable to load JSON.", e);
+        }
     }
 
-    static String convertStreamToString(Reader reader) {
+    private static String convertStreamToString(Reader reader) {
         Scanner s = new Scanner(reader).useDelimiter("\\A");
         return s.hasNext() ? s.next() : "";
     }
