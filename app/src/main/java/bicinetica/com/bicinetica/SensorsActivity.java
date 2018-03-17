@@ -89,31 +89,7 @@ public class SensorsActivity extends AppCompatActivity {
 
         RecyclerView resultList = this.findViewById(R.id.result_list);
         resultList.setLayoutManager(new LinearLayoutManager(this));
-        scannerAdapter = new BluetoothDeviceAdapter(scanned, new ListListener() {
-            @Override
-            public void onDeviceClicked(final BluetoothDevice device) {
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(SensorsActivity.this);
-
-                builder.setMessage(device.getName() + " " + device.getAddress())
-                        .setTitle(R.string.ask_for_connection)
-                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-
-                                if (!connectedDevices.contains(device)) {
-                                    connectedDevices.add(device);
-                                    connectedAdapter.notifyItemInserted(connectedDevices.size() - 1);
-                                }
-                            }
-                        })
-                        .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) { }
-                        })
-                        .create().show();
-            }
-        });
+        scannerAdapter = new BluetoothDeviceAdapter(scanned, listListener);
         resultList.setAdapter(scannerAdapter);
         resultList.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
 
@@ -202,6 +178,31 @@ public class SensorsActivity extends AppCompatActivity {
         bluetoothLeScanner.stopScan(scanCallback);
         searching = false;
     }
+
+    private ListListener listListener = new ListListener() {
+        @Override
+        public void onDeviceClicked(final BluetoothDevice device) {
+            new AlertDialog.Builder(SensorsActivity.this)
+                    .setMessage(device.getName())
+                    .setTitle(R.string.ask_for_connection)
+                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                            if (!connectedDevices.contains(device)) {
+                                connectedDevices.add(device);
+                                connectedAdapter.notifyItemInserted(connectedDevices.size() - 1);
+                            }
+                        }
+                    })
+                    .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) { }
+                    })
+                    .create()
+                    .show();
+        }
+    };
 
     public interface ListListener {
         void onDeviceClicked(BluetoothDevice item);
