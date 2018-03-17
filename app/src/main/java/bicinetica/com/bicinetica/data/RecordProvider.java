@@ -1,8 +1,6 @@
 package bicinetica.com.bicinetica.data;
 
 import android.os.Environment;
-import android.util.Log;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -14,13 +12,10 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-public class RecordProvider {
+public class RecordProvider extends ProviderBase<Record> {
+
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd_HHmmss");
     private static final RecordProvider instance = new RecordProvider();
-
-    private List<Record> items = new ArrayList<>();
-
-    private List<OnListChanged<Record>> listeners = new ArrayList<>();
 
     public static RecordProvider getInstance() {
         return instance;
@@ -37,6 +32,8 @@ public class RecordProvider {
             }
         });
 
+        List<Record> records = new ArrayList<>();
+
         for (File file: files) {
             String datetime = file.getName().substring(name.length(), file.getName().indexOf('.'));
 
@@ -51,54 +48,48 @@ public class RecordProvider {
             Record record = new Record();
             record.setName("Cycling outdoor");
             record.setDate(date);
-            items.add(record);
-
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N){
-                items.sort(new Comparator<Record>() {
-                    @Override
-                    public int compare(Record o1, Record o2) {
-                        return o2.getDate().compareTo(o1.getDate());
-                    }
-                });
-            }
+            records.add(record);
         }
-    }
 
-    public int getItemCount() {
-        return items.size();
-    }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N){
+            records.sort(new Comparator<Record>() {
+                @Override
+                public int compare(Record o1, Record o2) {
+                    return o2.getDate().compareTo(o1.getDate());
+                }
+            });
+        }
 
-    public Record get(int i) {
-        return items.get(i);
+        for (Record record : records) {
+            super.add(record);
+        }
     }
 
     public Record load(int i) throws IOException {
         return RecordMapper.load(getFile(get(i)));
     }
 
-    public List<Record> getAll() {
-        return items.subList(0, items.size() - 1);
+    @Override
+    public void add(Record record)  {
+        this.insert(0, record);
     }
 
-    public void add(Record record) throws IOException {
-        saveRecord(record);
-        items.add(0, record);
-
-        for (OnListChanged<Record> listener : listeners) {
-            listener.onItemAdded(0, record);
+    @Override
+    public void insert(int index, Record record) {
+        try {
+            saveRecord(record);
+            super.insert(index, record);
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
 
+    @Override
     public void remove(Record record) {
-        int i = findIndex(record);
-        items.remove(i);
-
         File f = getFile(record);
         f.delete();
 
-        for (OnListChanged<Record> listener : listeners) {
-            listener.onItemRemoved(i);
-        }
+        super.remove(record);
     }
 
     public String getPath(Record item) {
@@ -111,29 +102,7 @@ public class RecordProvider {
         return file;
     }
 
-    public void suscribe(OnListChanged<Record> listener) {
-        listeners.add(listener);
-    }
-    public void unsuscribe(OnListChanged<Record> listener) {
-        listeners.remove(listener);
-    }
-
-    private int findIndex(Record r) {
-        for (int i = 0; i < items.size(); i++) {
-            if (get(i).hashCode() == r.hashCode()) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
     private void saveRecord(Record record) throws IOException {
         RecordMapper.save(record, getFile(record));
-    }
-
-    public interface OnListChanged<T> {
-        void onItemAdded(int index, T item);
-        void onItemRemoved(int index);
-        //void onItemChanged(int index, T item);
     }
 }

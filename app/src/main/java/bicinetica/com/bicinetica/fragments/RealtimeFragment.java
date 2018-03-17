@@ -364,7 +364,7 @@ public class RealtimeFragment extends Fragment {
 
         try {
             RecordProvider.getInstance().add(record);
-        } catch (IOException ex) {
+        } catch (RuntimeException ex) {
             Toast.makeText(getActivity(), ex.getMessage(), Toast.LENGTH_LONG).show();
             Log.e("MAPPER", ex.getMessage());
         }
