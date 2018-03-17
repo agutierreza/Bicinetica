@@ -23,13 +23,16 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import bicinetica.com.bicinetica.data.SensorData;
+import bicinetica.com.bicinetica.data.SensorProvider;
+import bicinetica.com.bicinetica.data.ServiceData;
 import bicinetica.com.bicinetica.model.bluetooth.BluetoothCpService;
 import bicinetica.com.bicinetica.model.bluetooth.BluetoothCscService;
-import bicinetica.com.bicinetica.model.bluetooth.BluetoothDevicesManager;
 
 public class SensorsActivity extends AppCompatActivity {
 
@@ -46,31 +49,6 @@ public class SensorsActivity extends AppCompatActivity {
     private RecyclerView connectedList, resultList;
 
     private TextView noDevicesMsg, scanText;
-
-    private ScanCallback scanCallback = new ScanCallback() {
-        @Override
-        public void onScanResult(int callbackType, ScanResult result) {
-            BluetoothDevice device = result.getDevice();
-
-            if (!scanned.contains(device) &&
-                !connectedDevices.contains(device)) {
-                Log.i("BluetoothSearch", "BluetoothDevice founded: " + device.getAddress() + " " + device.getName());
-
-                scanned.add(device);
-                scannerAdapter.notifyItemInserted(scanned.size() - 1);
-            }
-        }
-
-        @Override
-        public void onBatchScanResults(List<ScanResult> results) {
-            super.onBatchScanResults(results);
-        }
-
-        @Override
-        public void onScanFailed(int errorCode) {
-            super.onScanFailed(errorCode);
-        }
-    };
 
     private boolean searching = false;
 
@@ -90,17 +68,25 @@ public class SensorsActivity extends AppCompatActivity {
         connectedList = this.findViewById(R.id.connected_devices_list);
         resultList = this.findViewById(R.id.result_list);
 
-        connectedDevices = BluetoothDevicesManager.getInstance().getDevices();
+        bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+        bluetoothAdapter = bluetoothManager.getAdapter();
+        bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
+
+        connectedDevices = new ArrayList<>();
+        for (SensorData data : SensorProvider.getInstance().getAll()) {
+            BluetoothDevice device = data.getDevice();
+            if (device == null) {
+                device = bluetoothAdapter.getRemoteDevice(data.getAddress());
+                data.setDevice(device);
+            }
+            connectedDevices.add(device);
+        }
 
         connectedList.setLayoutManager(new LinearLayoutManager(this));
         connectedList.setAdapter(connectedAdapter = new BluetoothDeviceAdapter(connectedDevices));
 
         resultList.setLayoutManager(new LinearLayoutManager(this));
         resultList.setAdapter(scannerAdapter = new BluetoothDeviceAdapter(scanned, listListener));
-
-        bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-        bluetoothAdapter = bluetoothManager.getAdapter();
-        bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
 
         if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
             bluetoothAdapter.enable();
@@ -119,6 +105,11 @@ public class SensorsActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         if (searching) stopScan();
+        try {
+            SensorProvider.getInstance().save();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         super.onDestroy();
     }
 
@@ -194,6 +185,21 @@ public class SensorsActivity extends AppCompatActivity {
         searching = false;
     }
 
+    private ScanCallback scanCallback = new ScanCallback() {
+        @Override
+        public void onScanResult(int callbackType, ScanResult result) {
+            BluetoothDevice device = result.getDevice();
+
+            if (!scanned.contains(device) &&
+                    !connectedDevices.contains(device)) {
+                Log.i("BluetoothSearch", "BluetoothDevice founded: " + device.getAddress() + " " + device.getName());
+
+                scanned.add(device);
+                scannerAdapter.notifyItemInserted(scanned.size() - 1);
+            }
+        }
+    };
+
     private ListListener listListener = new ListListener() {
         @Override
         public void onDeviceClicked(final BluetoothDevice device) {
@@ -227,6 +233,30 @@ public class SensorsActivity extends AppCompatActivity {
                     .show();
         }
     };
+
+    public static SensorData createData(BluetoothDevice device, List<ParcelUuid> uuids) {
+        SensorData sensor = new SensorData();
+        sensor.setName(device.getName());
+        sensor.setAddress(device.getAddress());
+
+        for (ParcelUuid uuid : uuids) {
+            ServiceData service = new ServiceData();
+            service.setUuid(uuid.getUuid());
+
+            if (service.getUuid().equals(BluetoothCscService.SERVICE_UUID)) {
+                service.setType(ServiceData.ServiceType.CyclingSpeedAndCadence);
+            }
+            else if (service.getUuid().equals(BluetoothCpService.SERVICE_UUID)) {
+                service.setType(ServiceData.ServiceType.CyclingPower);
+            }
+            else {
+                service.setType(ServiceData.ServiceType.Unknown);
+            }
+            sensor.getServices().add(service);
+        }
+
+        return sensor;
+    }
 
     public interface ListListener {
         void onDeviceClicked(BluetoothDevice item);

@@ -1,12 +1,15 @@
 package bicinetica.com.bicinetica.fragments;
 
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
+import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
+import android.content.Context;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -29,6 +32,8 @@ import bicinetica.com.bicinetica.data.Buffer;
 import bicinetica.com.bicinetica.data.Position;
 import bicinetica.com.bicinetica.data.Record;
 import bicinetica.com.bicinetica.data.RecordProvider;
+import bicinetica.com.bicinetica.data.SensorData;
+import bicinetica.com.bicinetica.data.SensorProvider;
 import bicinetica.com.bicinetica.model.CyclingOutdoorPower;
 import bicinetica.com.bicinetica.model.Function;
 import bicinetica.com.bicinetica.model.LocationProvider;
@@ -36,7 +41,6 @@ import bicinetica.com.bicinetica.model.LocationProviderMock;
 import bicinetica.com.bicinetica.model.Utilities;
 import bicinetica.com.bicinetica.model.bluetooth.BluetoothCpService;
 import bicinetica.com.bicinetica.model.bluetooth.BluetoothCscService;
-import bicinetica.com.bicinetica.model.bluetooth.BluetoothDevicesManager;
 import bicinetica.com.bicinetica.model.bluetooth.GattCommonDescriptors;
 import bicinetica.com.bicinetica.model.bluetooth.characteristics.CpMeasurement;
 import bicinetica.com.bicinetica.model.bluetooth.characteristics.CscMeasurement;
@@ -64,6 +68,8 @@ public class RealtimeFragment extends Fragment {
     private Buffer<Position> buffer = new Buffer<>(10);
     private Position newPosition, oldPosition;
 
+    private BluetoothManager bluetoothManager;
+    private BluetoothAdapter bluetoothAdapter;
     private List<BluetoothGatt> connections = new ArrayList<>();
 
     private LocationProvider locationProvider;
@@ -127,6 +133,9 @@ public class RealtimeFragment extends Fragment {
 
         //locationProvider = LocationProvider.createProvider(getActivity(), LocationProvider.MOCK_PROVIDER);
         locationProvider = LocationProvider.createProvider(getActivity(), LocationProvider.FUSED_PROVIDER);
+
+        bluetoothManager = (BluetoothManager) getActivity().getSystemService(Context.BLUETOOTH_SERVICE);
+        bluetoothAdapter = bluetoothManager.getAdapter();
     }
 
     @Override
@@ -324,12 +333,39 @@ public class RealtimeFragment extends Fragment {
         record.setDate(Calendar.getInstance().getTime());
         record.setName("Cycling outdoor");
 
-        locationProvider.registerListener(recordListener);
-
         running = true;
         duration.restart();
 
-        for (BluetoothDevice device: BluetoothDevicesManager.getInstance().getDevices()) {
+        connectSensors();
+
+        getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    private void commandStop() {
+        running = false;
+        duration.stop();
+
+        disconnectSensors();
+
+        try {
+            RecordProvider.getInstance().add(record);
+        } catch (RuntimeException ex) {
+            Toast.makeText(getActivity(), ex.getMessage(), Toast.LENGTH_LONG).show();
+            Log.e("MAPPER", ex.getMessage());
+        }
+
+        getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    private void connectSensors() {
+        locationProvider.registerListener(recordListener);
+
+        for (SensorData data : SensorProvider.getInstance().getAll()) {
+            BluetoothDevice device = data.getDevice();
+            if (device == null) {
+                device = bluetoothAdapter.getRemoteDevice(data.getAddress());
+                data.setDevice(device);
+            }
             BluetoothGatt gatt = device.connectGatt(getContext(), false, callback);
             if (gatt == null) {
                 Log.i(TAG, "Unable to connect GATT server");
@@ -348,27 +384,14 @@ public class RealtimeFragment extends Fragment {
                 e.printStackTrace();
             }
         }
-
-        getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
-    private void commandStop() {
-        running = false;
-        duration.stop();
-
+    private void disconnectSensors() {
         locationProvider.unregisterListener(recordListener);
 
         for (int i = connections.size() - 1; i >= 0; i--) {
             connections.get(i).close();
+            connections.remove(i);
         }
-
-        try {
-            RecordProvider.getInstance().add(record);
-        } catch (RuntimeException ex) {
-            Toast.makeText(getActivity(), ex.getMessage(), Toast.LENGTH_LONG).show();
-            Log.e("MAPPER", ex.getMessage());
-        }
-
-        getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 }
