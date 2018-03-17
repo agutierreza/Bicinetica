@@ -20,19 +20,32 @@ public class LocationProviderMock extends LocationProvider {
     private Activity activity;
     private LocationListener listener;
 
+    private long delay;
+
     public LocationProviderMock(Activity activity) {
         this.activity = activity;
+        this.delay = 1000;
     }
 
+    public Record getRecord() {
+        return record;
+    }
     public void setRecord(Record record) {
         this.record = record;
         positions = record.getPositions();
     }
 
+    public long getDelay() {
+        return delay;
+    }
+    public void setDelay(long delay) {
+        this.delay = delay;
+    }
+
     public void start() {
         currentIndex = 0;
         record.setDate(Calendar.getInstance().getTime());
-        timer.schedule(timerTask, 1000, 1000);
+        timer.schedule(timerTask, delay, delay);
     }
 
     @Override
