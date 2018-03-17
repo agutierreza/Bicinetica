@@ -30,5 +30,8 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="devices">Devices</string>
+    <string name="delete">Delete</string>
+    <string name="connected_devices">Connected devices:</string>
+    <string name="search_results">Search results:</string>
 
 </resources>

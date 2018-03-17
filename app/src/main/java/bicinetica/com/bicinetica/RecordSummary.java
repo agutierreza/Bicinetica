@@ -41,6 +41,7 @@ import bicinetica.com.bicinetica.data.Record;
 import bicinetica.com.bicinetica.data.RecordMapper;
 import bicinetica.com.bicinetica.data.RecordProvider;
 import bicinetica.com.bicinetica.model.Utilities;
+import bicinetica.com.bicinetica.widgets.NumberView;
 
 public class RecordSummary extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -49,7 +50,8 @@ public class RecordSummary extends AppCompatActivity implements OnMapReadyCallba
     private GoogleMap mMap;
     private Record record;
 
-    private TextView duration, distance;
+    private TextView duration;
+    private NumberView distance;
     private LineChart mChart;
 
     private String filename;
@@ -87,11 +89,9 @@ public class RecordSummary extends AppCompatActivity implements OnMapReadyCallba
 
         getSupportActionBar().setTitle(record.getName());
 
-        float distanceValue = record.getDistance() / 1000;
-        distance.setText(distanceValue > 0 ? String.format("%.2f km", distanceValue) : "--");
-
+        distance.setUnits("km");
+        distance.setValue(record.getDistance() / 1000);
         duration.setText(durationFormat.format(new Date(record.getLastPosition().getTimestamp())));
-
 
         mChart = findViewById(R.id.chart1);
 
@@ -201,7 +201,8 @@ public class RecordSummary extends AppCompatActivity implements OnMapReadyCallba
 
         if (mChart.getData() == null)
         {
-            speed = new LineDataSet(new ArrayList<Entry>(), "Speed (km/h)");
+            getResources().getString(R.string.speed);
+            speed = new LineDataSet(new ArrayList<Entry>(), getResources().getString(R.string.speed));
             speed.setDrawCircles(false);
             speed.setColor(Color.BLUE);
             speed.setAxisDependency(YAxis.AxisDependency.LEFT);
@@ -209,7 +210,7 @@ public class RecordSummary extends AppCompatActivity implements OnMapReadyCallba
             speed.setLineWidth(1f);
             speed.setFormLineDashEffect(new DashPathEffect(new float[]{10f, 5f}, 0f));
 
-            altitude = new LineDataSet(new ArrayList<Entry>(), "Altitude (m)");
+            altitude = new LineDataSet(new ArrayList<Entry>(), getResources().getString(R.string.altitude));
             altitude.setDrawCircles(false);
             altitude.setColor(Color.GREEN);
             altitude.setAxisDependency(YAxis.AxisDependency.RIGHT);
@@ -219,7 +220,7 @@ public class RecordSummary extends AppCompatActivity implements OnMapReadyCallba
             altitude.setDrawFilled(true);
 
             /*
-            distance = new LineDataSet(new ArrayList<Entry>(), "Distance (m)");
+            distance = new LineDataSet(new ArrayList<Entry>(), getResources().getString(R.string.distance));
             distance.setDrawCircles(false);
             distance.setColor(Color.RED);
             distance.setAxisDependency(YAxis.AxisDependency.RIGHT);
