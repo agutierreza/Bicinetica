@@ -24,6 +24,7 @@ public class ExampleUnitTest {
 
         assertEquals(position1, inte.apply(919010L));
         assertEquals(position2, inte.apply(920990L));
+
     }
 
 
