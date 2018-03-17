@@ -14,13 +14,14 @@ import android.os.Bundle;
 import android.os.ParcelUuid;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,12 +43,17 @@ public class SensorsActivity extends AppCompatActivity {
     private BluetoothDeviceAdapter scannerAdapter;
     private BluetoothDeviceAdapter connectedAdapter;
 
+    private RecyclerView connectedList, resultList;
+
+    private TextView noDevicesMsg, scanText;
+
     private ScanCallback scanCallback = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             BluetoothDevice device = result.getDevice();
 
-            if (!scanned.contains(device)) {
+            if (!scanned.contains(device) &&
+                !connectedDevices.contains(device)) {
                 Log.i("BluetoothSearch", "BluetoothDevice founded: " + device.getAddress() + " " + device.getName());
 
                 scanned.add(device);
@@ -79,19 +85,18 @@ public class SensorsActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setTitle(R.string.devices);
 
+        noDevicesMsg = findViewById(R.id.no_devices_label);
+        scanText = findViewById(R.id.scan_results_label);
+        connectedList = this.findViewById(R.id.connected_devices_list);
+        resultList = this.findViewById(R.id.result_list);
+
         connectedDevices = BluetoothDevicesManager.getInstance().getDevices();
 
-        RecyclerView connectedList = this.findViewById(R.id.connected_devices_list);
         connectedList.setLayoutManager(new LinearLayoutManager(this));
-        connectedAdapter = new BluetoothDeviceAdapter(connectedDevices);
-        connectedList.setAdapter(connectedAdapter);
-        connectedList.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        connectedList.setAdapter(connectedAdapter = new BluetoothDeviceAdapter(connectedDevices));
 
-        RecyclerView resultList = this.findViewById(R.id.result_list);
         resultList.setLayoutManager(new LinearLayoutManager(this));
-        scannerAdapter = new BluetoothDeviceAdapter(scanned, listListener);
-        resultList.setAdapter(scannerAdapter);
-        resultList.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        resultList.setAdapter(scannerAdapter = new BluetoothDeviceAdapter(scanned, listListener));
 
         bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         bluetoothAdapter = bluetoothManager.getAdapter();
@@ -99,6 +104,15 @@ public class SensorsActivity extends AppCompatActivity {
 
         if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
             bluetoothAdapter.enable();
+        }
+
+        scanText.setVisibility(View.GONE);
+
+        if (connectedDevices.size() == 0) {
+            connectedList.setVisibility(View.GONE);
+        }
+        else {
+            noDevicesMsg.setVisibility(View.GONE);
         }
     }
 
@@ -140,6 +154,7 @@ public class SensorsActivity extends AppCompatActivity {
     }
 
     public void startScan() {
+        scanText.setVisibility(View.VISIBLE);
         startScan(BluetoothCscService.SERVICE_UUID,
                 BluetoothCpService.SERVICE_UUID);
     }
@@ -192,6 +207,15 @@ public class SensorsActivity extends AppCompatActivity {
                             if (!connectedDevices.contains(device)) {
                                 connectedDevices.add(device);
                                 connectedAdapter.notifyItemInserted(connectedDevices.size() - 1);
+
+                                if (connectedList.getVisibility() != View.VISIBLE) {
+                                    connectedList.setVisibility(View.VISIBLE);
+                                    noDevicesMsg.setVisibility(View.GONE);
+                                }
+
+                                int index = scanned.indexOf(device);
+                                scanned.remove(index);
+                                scannerAdapter.notifyItemRemoved(index);
                             }
                         }
                     })

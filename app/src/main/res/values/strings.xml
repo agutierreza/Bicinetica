@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Bicinetica</string>
+    <string name="app_name">Kinwatt</string>
 
     <string name="start">Start</string>
     <string name="stop">Stop</string>
@@ -31,7 +31,9 @@
     <string name="no">No</string>
     <string name="devices">Devices</string>
     <string name="delete">Delete</string>
-    <string name="connected_devices">Connected devices:</string>
+    <string name="available_devices">Avaliable devices</string>
     <string name="search_results">Search results:</string>
+    <string name="connected_devices">Connected devices</string>
+    <string name="no_devices_msg">There isn\'t devices connected.</string>
 
 </resources>
