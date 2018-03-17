@@ -284,7 +284,7 @@ public class RealtimeFragment extends Fragment {
                     rpm.post(new Runnable() {
                         @Override
                         public void run() {
-                            rpm.setText(rpmValue > 0 ? String.format("%.2f", rpmValue) : "--");
+                            rpm.setValue(rpmValue);
                         }
                     });
                 }
@@ -296,7 +296,7 @@ public class RealtimeFragment extends Fragment {
                 powerInst.post(new Runnable() {
                     @Override
                     public void run() {
-                        powerInst.setText(power > 0 ? String.format("%.2f", power) : "--");
+                        powerInst.setValue(power);
                     }
                 });
             }
