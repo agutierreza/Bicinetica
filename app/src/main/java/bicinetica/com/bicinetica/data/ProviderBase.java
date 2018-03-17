@@ -1,6 +1,5 @@
 package bicinetica.com.bicinetica.data;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +19,8 @@ public class ProviderBase<T> {
     }
 
     public List<T> getAll() {
-        return items.subList(0, items.size() - 1);
+        return items.subList(0, items.size());
+        //return items.subList(0, items.size() - 1);
     }
 
     public void add(T record) {
@@ -46,6 +46,10 @@ public class ProviderBase<T> {
         for (OnListChanged<T> listener : listeners) {
             listener.onItemRemoved(i);
         }
+    }
+
+    public boolean contains(SensorData sensorData) {
+        return items.contains(sensorData);
     }
 
     public void suscribe(OnListChanged<T> listener) {
