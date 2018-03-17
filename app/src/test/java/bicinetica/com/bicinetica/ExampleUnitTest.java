@@ -2,10 +2,7 @@ package bicinetica.com.bicinetica;
 
 import org.junit.Test;
 
-import java.util.ArrayList;
-
 import bicinetica.com.bicinetica.data.Position;
-import bicinetica.com.bicinetica.data.PositionGPS;
 import bicinetica.com.bicinetica.model.Function;
 import bicinetica.com.bicinetica.model.Utilities;
 
@@ -20,13 +17,13 @@ public class ExampleUnitTest {
     @Test
     public void interpolation_basePoints_isCorrect() throws Exception {
 
-        PositionGPS position1 = new PositionGPS(36f, -4f, 215f, 5f, 919.01f);
-        PositionGPS position2 = new PositionGPS(37f, -5f, 230f, 4f, 920.99f);
+        Position position1 = new Position(36f, -4f, 215f, 5f, 919010);
+        Position position2 = new Position(37f, -5f, 230f, 4f, 920990);
 
-        Function<Float, PositionGPS> inte = Utilities.createInterpolation(position1, position2);
+        Function<Long, Position> inte = Utilities.createInterpolation(position1, position2);
 
-        assertEquals(position1, inte.apply(919.01f));
-        assertEquals(position2, inte.apply(920.99f));
+        assertEquals(position1, inte.apply(919010L));
+        assertEquals(position2, inte.apply(920990L));
     }
 
 
