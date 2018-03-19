@@ -1,6 +1,6 @@
 package bicinetica.com.bicinetica.model;
 
-import java.util.ArrayList;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -126,6 +126,7 @@ public final class Utilities {
             }
         };
     }
+
 }
 
 class InterpolatorLong implements Function<Long, Float> {
@@ -143,4 +144,6 @@ class InterpolatorLong implements Function<Long, Float> {
     public Float apply(Long value) {
         return m * value + n;
     }
+
+
 }

@@ -37,26 +37,7 @@ public class CyclingOutdoorPower {
 		return Float.isNaN(power) ? 0 : power;
 	}
 
-    /**
-     * Speed from speed sensor and power from strain gauges power meter. It gives a CdA snapshoot for one second. To
-     * @param speedOld
-     * @param speedNew is equal to speedOld + 1 second!!!!
-     * @param realPower
-     * @return
-     */
-    public static float estimateIndoorCdA(float speedOld, float speedNew, int realPower) {
-        float avgSpeed = Utilities.average(speedOld, speedNew);
-        float pKin = (float)(Math.pow(speedNew, 2) - Math.pow(speedOld, 2)) * totalMass / 2;
-        float pDrag = (float)Math.pow(avgSpeed, 3) * drag;
-        float pRolling = avgSpeed * cRolling * gForce * totalMass;
-        float power = pKin + pDrag + pRolling;
-        float estCdA = 2*(realPower - pKin - pRolling)/(rho*(float) Math.pow(avgSpeed,3));
-        return estCdA;
-    }
 
-    public static float estimateIndoorCdA(ArrayList<Float> speed, ArrayList<Integer> power){
-        float estCdA=0;
-        //TODO: Second method for estimating CdA
-        return estCdA;
-    }
+
+
 }
