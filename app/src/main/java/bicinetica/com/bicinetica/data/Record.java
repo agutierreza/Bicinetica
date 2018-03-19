@@ -40,7 +40,7 @@ public class Record {
 
     public float getDistance() {
         float distance = 0;
-        for (int i = 0; i < positions.size() - 2; i++) {
+        for (int i = 0; i < positions.size() - 1; i++) {
             Position p1 = positions.get(i);
             Position p2 = positions.get(i + 1);
             distance += p1.getDistance(p2);
