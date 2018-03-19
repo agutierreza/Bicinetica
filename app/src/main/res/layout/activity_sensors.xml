@@ -31,14 +31,16 @@
             android:id="@+id/connected_devices_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
+            android:background="@drawable/rectangle"
+            android:elevation="2dp"
+            android:paddingStart="16dp"
             android:text="@string/connected_devices"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/appBarLayout" />
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/connected_devices_list"
+            android:elevation="8dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:scrollbars="vertical"
@@ -62,8 +64,9 @@
             android:id="@+id/scan_results_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
+            android:background="@drawable/rectangle"
+            android:elevation="2dp"
+            android:paddingStart="16dp"
             android:text="@string/search_results"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/connected_devices_list" />
