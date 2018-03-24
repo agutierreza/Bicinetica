@@ -142,6 +142,8 @@ public class UserActivity extends AppCompatActivity {
             Bike bike = new Bike();
             bike.setType((Bike.BikeType) findViewById(bikeTypeView.getCheckedRadioButtonId()).getTag());
             bike.setWeight(Float.parseFloat(bikeWeight));
+
+            user.getBikes().add(bike);
         }
 
         return res;
