@@ -5,10 +5,13 @@ import java.util.Collection;
 import java.util.List;
 
 import bicinetica.com.bicinetica.data.Position;
+import bicinetica.com.bicinetica.data.Record;
 
 public final class Utilities {
 
     private static final float ALTITUDE_ERROR = 10;
+
+    private static final int INTERPOLATION_STEP = 1000; // 1s
 
     public static float average(Collection<Float> items) {
         float res = 0;
@@ -68,7 +71,7 @@ public final class Utilities {
         Position previous = i > 0 ? positions.get(i - 1) : null;
 
         if (previous != null && position.getAltitude()  == 0) {
-        //if (previous != null && previous.getAltitude() - position.getAltitude() > ALTITUDE_ERROR) {
+
             int j = getNextValidIndex(i, previous.getAltitude(), positions);
 
             Position next = j > 0 ? positions.get(j) : null;
@@ -97,6 +100,49 @@ public final class Utilities {
             }
         }
         return -1;
+    }
+
+    public static Record interpolated(Record record) {
+        Record res = new Record();
+        res.setName(record.getName());
+        res.setDate(record.getDate());
+        res.getPositions().add(record.getPositions().get(0));
+
+        for (int i = 0; i < record.getPositions().size() - 1; i++) {
+            interpolatePositions(res, record.getPositions().get(i), record.getPositions().get(i + 1));
+        }
+
+        return res;
+    }
+
+    private static void interpolatePositions(Record record, Position p1,  Position p2) {
+        Function<Long, Position> interpolation = Utilities.createInterpolation(p1, p2);
+        
+        long start = record.getLastPosition().getTimestamp() + INTERPOLATION_STEP;
+        long end = p2.getTimestamp() + (INTERPOLATION_STEP - p2.getTimestamp() % INTERPOLATION_STEP);
+
+        for (long i = start; i <= end; i += INTERPOLATION_STEP) {
+            Position lastPosition = record.getLastPosition();
+            Position interpolatedPosition = interpolation.apply(i);
+
+            //TODO: Calculate degrees from 5s ago;
+            /*
+            if (record.getPositions().size() >= 5) {
+                Position target = buffer.peek(4);
+                float hDiff = interpolatedPosition.getAltitude() - target.getAltitude();
+                float grade = hDiff / target.getDistance(interpolatedPosition);
+
+                interpolatedPosition.setPower(CyclingOutdoorPower.calculatePower(lastPosition, interpolatedPosition, grade));
+            }
+            else {
+                interpolatedPosition.setPower(CyclingOutdoorPower.calculatePower(lastPosition, interpolatedPosition));
+            }
+            */
+            
+            interpolatedPosition.setPower(CyclingOutdoorPower.calculatePower(lastPosition, interpolatedPosition));
+            
+            record.getPositions().add(interpolatedPosition);
+        }
     }
 
     public static Function<Long, Position> createInterpolation(final Position p1, final Position p2) {
