@@ -43,5 +43,7 @@
     <string name="bike_weight">Bike weight</string>
     <string name="bike_data">Bike data</string>
     <string name="personal_information">Personal information</string>
+    <string name="error_field_required">This field is requiered</string>
+    <string name="error_invalid_name">Name only can contains letters</string>
 
 </resources>

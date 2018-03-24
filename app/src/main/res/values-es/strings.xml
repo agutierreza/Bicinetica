@@ -46,5 +46,7 @@
     <string name="bike_weight">Peso de bicicleta  (kg)</string>
     <string name="bike_data">Datos de bicicleta</string>
     <string name="personal_information">Información personal</string>
+    <string name="error_field_required">Este campo es obligatorio</string>
+    <string name="error_invalid_name">El nombre solo puede contener letras</string>
 
 </resources>

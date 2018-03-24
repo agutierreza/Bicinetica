@@ -35,6 +35,7 @@
                 android:inputType="number">
 
                 <AutoCompleteTextView
+                    android:id="@+id/text_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ems="10"
@@ -48,6 +49,7 @@
                 android:layout_height="match_parent">
 
                 <EditText
+                    android:id="@+id/text_age"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ems="10"
@@ -69,6 +71,7 @@
                     android:layout_height="match_parent">
 
                     <EditText
+                        android:id="@+id/text_weight"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
@@ -84,12 +87,13 @@
                     android:layout_height="match_parent">
 
                     <EditText
+                        android:id="@+id/text_height"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:ems="10"
                         android:hint="@string/height"
-                        android:inputType="number" />
+                        android:inputType="numberDecimal" />
 
                 </android.support.design.widget.TextInputLayout>
             </LinearLayout>
@@ -126,6 +130,7 @@
                 android:textSize="16sp" />
 
             <RadioGroup
+                android:id="@+id/radio_group_bike"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginStart="16dp"
@@ -133,14 +138,14 @@
                 android:orientation="horizontal">
 
                 <RadioButton
-                    android:id="@+id/radioButton"
+                    android:id="@+id/radio_road"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/road" />
 
                 <RadioButton
-                    android:id="@+id/radioButton2"
+                    android:id="@+id/radio_mountain"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -152,18 +157,19 @@
                 android:layout_height="match_parent">
 
                 <EditText
+                    android:id="@+id/text_bike_weight"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ems="10"
                     android:hint="@string/bike_weight"
-                    android:inputType="number" />
+                    android:inputType="numberDecimal" />
 
             </android.support.design.widget.TextInputLayout>
 
         </LinearLayout>
 
         <Button
-            android:id="@+id/button2"
+            android:id="@+id/button_continue"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
