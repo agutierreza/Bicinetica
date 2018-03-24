@@ -36,5 +36,15 @@
     <string name="connected_devices">Dispositivos connectados</string>
     <string name="no_devices_msg">No hay dispositivos conectados.</string>
     <string name="speed_average">Velocidad media</string>
+    <string name="weight">Peso (kg)</string>
+    <string name="height">Estatura (cm)</string>
+    <string name="name">Nombre</string>
+    <string name="bike_type">Tipo de bicicleta</string>
+    <string name="road">Carretera</string>
+    <string name="mountain">Montaña</string>
+    <string name="age">Edad</string>
+    <string name="bike_weight">Peso de bicicleta  (kg)</string>
+    <string name="bike_data">Datos de bicicleta</string>
+    <string name="personal_information">Información personal</string>
 
 </resources>
