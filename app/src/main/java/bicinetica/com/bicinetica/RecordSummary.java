@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -58,10 +59,11 @@ public class RecordSummary extends AppCompatActivity implements OnMapReadyCallba
     private static final SimpleDateFormat durationFormat = new SimpleDateFormat("H:mm:ss");
 
     private GoogleMap mMap;
-    private Record record;
+    private Record record, interpolated;
 
     private TextView duration;
-    private NumberView distance;
+    private NumberView distance, speed;
+
     private LineChart lineChart;
     private BarChart barChart;
 
@@ -85,6 +87,9 @@ public class RecordSummary extends AppCompatActivity implements OnMapReadyCallba
 
         duration = findViewById(R.id.duration);
         distance = findViewById(R.id.distance);
+        distance.setUnits("km");
+        speed = findViewById(R.id.speed);
+        speed.setUnits("km/h");
 
         Intent intent = getIntent();
         filename = intent.getStringExtra("file_name");
@@ -104,12 +109,13 @@ public class RecordSummary extends AppCompatActivity implements OnMapReadyCallba
 
         getSupportActionBar().setTitle(record.getName());
 
-        distance.setUnits("km");
+
+        Utilities.suavice(record.getPositions());
+        interpolated = Utilities.interpolated(record);
+
         distance.setValue(record.getDistance() / 1000);
         duration.setText(durationFormat.format(new Date(record.getLastPosition().getTimestamp())));
-
-        populateSpeedChart();
-        populatePowerChart();
+        speed.setValue(getSpeedAverage(interpolated) * 3.6f);
 
         WorkaroundMapFragment mMapFragment = (WorkaroundMapFragment)getSupportFragmentManager().findFragmentById(R.id.map_container);
         mMapFragment.setListener(new WorkaroundMapFragment.OnTouchListener() {
@@ -119,6 +125,11 @@ public class RecordSummary extends AppCompatActivity implements OnMapReadyCallba
             }
         });
         mMapFragment.getMapAsync(this);
+
+        populateSpeedChart();
+        populatePowerChart();
+
+        interpolated = null;
     }
 
     @Override
@@ -185,6 +196,20 @@ public class RecordSummary extends AppCompatActivity implements OnMapReadyCallba
         mMap.addPolyline(options);
     }
 
+    private static float getSpeedAverage(Record record) {
+        List<Float> validValues = new ArrayList<>();
+        for (Position p : record.getPositions()) {
+            if (p.getSpeed() != 0) {
+                validValues.add(p.getSpeed());
+            }
+        }
+
+        float res = 0;
+        for (float v : validValues) {
+            res += v / validValues.size();
+        }
+        return res;
+    }
 
     private void populateSpeedChart() {
         lineChart = findViewById(R.id.chart1);
@@ -247,7 +272,6 @@ public class RecordSummary extends AppCompatActivity implements OnMapReadyCallba
 
 
     private void setSpeedValues() {
-        Utilities.suavice(record.getPositions());
 
         LineDataSet speed = (LineDataSet)lineChart.getData().getDataSetByIndex(0);
         LineDataSet altitude = (LineDataSet)lineChart.getData().getDataSetByIndex(1);
@@ -344,8 +368,6 @@ public class RecordSummary extends AppCompatActivity implements OnMapReadyCallba
     }
 
     private void updateBar() {
-        Record interpolated = Utilities.interpolated(this.record);
-
         Map<Integer, Integer> map = new TreeMap<>();
 
         int max = 0;
