@@ -10,8 +10,14 @@ import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorEventListener2;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,6 +27,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -34,6 +41,8 @@ import bicinetica.com.bicinetica.data.Record;
 import bicinetica.com.bicinetica.data.RecordProvider;
 import bicinetica.com.bicinetica.data.SensorData;
 import bicinetica.com.bicinetica.data.SensorProvider;
+import bicinetica.com.bicinetica.data.User;
+import bicinetica.com.bicinetica.data.UserMapper;
 import bicinetica.com.bicinetica.model.CyclingOutdoorPower;
 import bicinetica.com.bicinetica.model.Function;
 import bicinetica.com.bicinetica.model.LocationProvider;
@@ -47,11 +56,13 @@ import bicinetica.com.bicinetica.model.bluetooth.characteristics.CscMeasurement;
 import bicinetica.com.bicinetica.widgets.ChronometerView;
 import bicinetica.com.bicinetica.widgets.NumberView;
 
-public class RealtimeFragment extends Fragment {
+public class RealtimeFragment extends Fragment  implements SensorEventListener {
 
     private static final String TAG = RealtimeFragment.class.getSimpleName();
 
     private static final int INTERPOLATION_STEP = 1000; // 1s
+
+    private User user;
 
     private Record record;
     private Button buttonStart, buttonStop;
@@ -72,13 +83,21 @@ public class RealtimeFragment extends Fragment {
     private BluetoothAdapter bluetoothAdapter;
     private List<BluetoothGatt> connections = new ArrayList<>();
 
+    private SensorManager sensorManager;
+    private Sensor barometer;
+
     private LocationProvider locationProvider;
     private LocationProvider.LocationListener recordListener = new LocationProvider.LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
+            if (barometer != null) {
+                location.setAltitude(_altitude);
+            }
+
             Position position = record.addPosition(location);
 
             if (!running) return;
+
 
             // Create a working copy
             position = position.clone();
@@ -136,6 +155,15 @@ public class RealtimeFragment extends Fragment {
 
         bluetoothManager = (BluetoothManager) getActivity().getSystemService(Context.BLUETOOTH_SERVICE);
         bluetoothAdapter = bluetoothManager.getAdapter();
+
+        sensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
+        barometer = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
+
+        try {
+            user = UserMapper.load(new File(Environment.getExternalStorageDirectory(), "kinwatt_user.json"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -360,6 +388,10 @@ public class RealtimeFragment extends Fragment {
     private void connectSensors() {
         locationProvider.registerListener(recordListener);
 
+        if (barometer != null) {
+            sensorManager.registerListener(this, barometer, SensorManager.SENSOR_DELAY_NORMAL);
+        }
+
         for (SensorData data : SensorProvider.getInstance().getAll()) {
             BluetoothDevice device = data.getDevice();
             if (device == null) {
@@ -389,9 +421,26 @@ public class RealtimeFragment extends Fragment {
     private void disconnectSensors() {
         locationProvider.unregisterListener(recordListener);
 
+        if (barometer != null) {
+            sensorManager.unregisterListener(this);
+        }
+
         for (int i = connections.size() - 1; i >= 0; i--) {
             connections.get(i).close();
             connections.remove(i);
         }
+    }
+
+    private float _altitude = 0;
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        _altitude = SensorManager.getAltitude(SensorManager.PRESSURE_STANDARD_ATMOSPHERE, event.values[0]);
+        altitude.setValue(_altitude);
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
     }
 }
