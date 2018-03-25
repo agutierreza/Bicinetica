@@ -61,8 +61,10 @@ public final class Utilities {
     }
 
     public static void suavice(List<Position> positions) {
-        for (int i = 0; i < positions.size(); i++) {
-            suavice(i, positions);
+        if (positions.size() > 1) {
+            for (int i = 0; i < positions.size(); i++) {
+                suavice(i, positions);
+            }
         }
     }
 
