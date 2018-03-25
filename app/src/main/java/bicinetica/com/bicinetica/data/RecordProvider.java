@@ -94,8 +94,9 @@ public class RecordProvider extends ProviderBase<Record> {
 
     @Override
     public int findIndex(Record item) {
+        long itemTime = item.getDate().getTime();
         for (int i = 0; i < getItemCount(); i++) {
-            if (item.getDate().equals(get(i).getDate())) {
+            if (equals(itemTime, get(i).getDate().getTime(), 1000)) {
                 return i;
             }
         }
@@ -114,5 +115,9 @@ public class RecordProvider extends ProviderBase<Record> {
 
     private void saveRecord(Record record) throws IOException {
         RecordMapper.save(record, getFile(record));
+    }
+
+    private static boolean equals(long x, long y, long tolerancy) {
+        return Math.abs(x - y) < tolerancy;
     }
 }
