@@ -56,7 +56,10 @@ public final class Utilities {
         }
         return Math.round((float)bestSum / seg);
     }
-
+    public static int normPower(List<Integer> powerList) {
+        //TODO Normalize Power algorithm
+        return 0;
+    }
     public static void suavice(List<Position> positions) {
         for (int i = 0; i < positions.size(); i++) {
             suavice(i, positions);
