@@ -56,9 +56,24 @@ public final class Utilities {
         }
         return Math.round((float)bestSum / seg);
     }
-    public static int normPower(List<Integer> powerList) {
-        //TODO Normalize Power algorithm
-        return 0;
+    public static float normPower(int[] power) {
+        final int SEC = 30;//NP It's defined using a 30 second rolling average
+        int size=power.length - SEC + 1;
+        int [] mpower = new int [size]; //Keep for debbuging. Delete later.
+        int sum = 0;
+        for (int i = 0 ; i < SEC ; i++){
+            sum +=power[i];
+        }
+        mpower[0]=sum/SEC;
+        float sumpower4 = mpower [0];
+        for (int i = 1 ; i< size ; i++){// ^4 the 30s. moving avg. vector
+            sum += power[i + SEC - 1]-power[i-1];
+            mpower[i]=sum/SEC;
+            sumpower4 += Math.pow(mpower[i],4);
+        }
+
+        float mean = sumpower4/size; // avg the ^4
+        return (float) Math.pow(mean,0.25); //return the fourth square of the mean of ^4 of 30s. moving avg.
     }
     public static void suavice(List<Position> positions) {
         for (int i = 0; i < positions.size(); i++) {

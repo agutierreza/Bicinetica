@@ -7,6 +7,8 @@ import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import bicinetica.com.bicinetica.data.Position;
 import bicinetica.com.bicinetica.model.Function;
@@ -46,22 +48,29 @@ public class ExampleUnitTest {
             }
         }
 */
+        List<Integer> power = new ArrayList<Integer>();
+
         try{
             InputStream is = this.getClass().getClassLoader().getResourceAsStream("pairs.txt");
             BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
             String strLine;
+            int i=0;
             while ((strLine = br.readLine()) != null)   {
-                //probando...
-                System.out.println (strLine);
+                String [] values = strLine.split(";");
+                power.add(Integer.parseInt(values[0]));
+                i++;
             }
             br.close();
         }catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
         }
 
-
-        //Utilities.estimateIndoorParam(listvel,listpower);
-
+        int [] powerArray= new int[power.size()];
+        for (int i=0; i<power.size();i++){
+            powerArray[i]=power.get(i);
+        }
+        float np = Utilities.normPower(powerArray);
+        System.out.printf("NP:%.2f",np);
     }
 
 }

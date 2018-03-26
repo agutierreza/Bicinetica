@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/Bicinetica.iml" filepath="$PROJECT_DIR$/.idea/Bicinetica.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Bicinetica.iml" filepath="$PROJECT_DIR$/Bicinetica.iml" />
+      <module fileurl="file://C:\Users\gutisiano\AndroidStudioProjects\Bicinetica\.idea\Bicinetica.iml" filepath="C:\Users\gutisiano\AndroidStudioProjects\Bicinetica\.idea\Bicinetica.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
