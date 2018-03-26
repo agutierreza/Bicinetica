@@ -181,7 +181,7 @@ class InterpolatorLong implements Function<Long, Float> {
     private float m, n;
 
     public InterpolatorLong(long x1, float y1, long x2, float y2) {
-        if (x1 >= x2) throw new IllegalArgumentException();
+        if (x1 >= x2) throw new IllegalArgumentException(String.format("'%s' cannot be greather than '%s'.", x1, x2));
 
         m = (y2 - y1) / (x2 - x1);
         n = y1 - m * x1;

@@ -43,6 +43,7 @@ import bicinetica.com.bicinetica.data.SensorData;
 import bicinetica.com.bicinetica.data.SensorProvider;
 import bicinetica.com.bicinetica.data.User;
 import bicinetica.com.bicinetica.data.UserMapper;
+import bicinetica.com.bicinetica.diagnostics.Trace;
 import bicinetica.com.bicinetica.model.CyclingOutdoorPower;
 import bicinetica.com.bicinetica.model.Function;
 import bicinetica.com.bicinetica.model.LocationProvider;
@@ -90,14 +91,19 @@ public class RealtimeFragment extends Fragment  implements SensorEventListener {
     private LocationProvider.LocationListener recordListener = new LocationProvider.LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
+            Trace.info("Location received: %s", locationToString(location, record));
+
             if (barometer != null) {
                 location.setAltitude(_altitude);
             }
 
+            Trace.debug("Location after altitude update: %s", locationToString(location, record));
+
             Position position = record.addPosition(location);
 
-            if (!running) return;
+            Trace.debug("Location after include record: %s", position);
 
+            if (!running) return;
 
             // Create a working copy
             position = position.clone();
@@ -257,6 +263,10 @@ public class RealtimeFragment extends Fragment  implements SensorEventListener {
     }
 
     private void interpolatePositions(Position position) {
+        Trace.info("Creating interpolation.");
+        Trace.info("Position 1: %s", newPosition);
+        Trace.info("Position 2: %s", position);
+
         Function<Long, Position> interpolation = Utilities.createInterpolation(newPosition, position);
 
         long start = buffer.last().getTimestamp() + INTERPOLATION_STEP;
@@ -353,6 +363,8 @@ public class RealtimeFragment extends Fragment  implements SensorEventListener {
     };
 
     private void commandStart() {
+        Trace.start("Recording");
+
         newPosition = null;
         oldPosition = null;
         buffer.clear();
@@ -383,6 +395,8 @@ public class RealtimeFragment extends Fragment  implements SensorEventListener {
         }
 
         getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        Trace.stop("Recording");
     }
 
     private void connectSensors() {
@@ -442,5 +456,14 @@ public class RealtimeFragment extends Fragment  implements SensorEventListener {
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
+    }
+
+    private static String locationToString(Location location, Record record) {
+        return String.format("[%s, %s] Timestamp: %s, Altitude: %s , Speed: %s",
+                location.getLatitude(),
+                location.getLongitude(),
+                location.getTime() - record.getDate().getTime(),
+                location.getAltitude(),
+                location.getSpeed());
     }
 }

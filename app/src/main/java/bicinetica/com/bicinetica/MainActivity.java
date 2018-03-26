@@ -14,6 +14,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import bicinetica.com.bicinetica.diagnostics.Trace;
+
 public class MainActivity extends AppCompatActivity {
 
     private TabsAdapter tabs;
@@ -23,6 +25,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Trace.init();
 
         Toolbar myToolbar = findViewById(R.id.toolbar);
         setSupportActionBar(myToolbar);
@@ -36,6 +40,20 @@ public class MainActivity extends AppCompatActivity {
 
         askForPermissions(Manifest.permission.ACCESS_FINE_LOCATION);
         askForPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                Trace.critical(e);
+                MainActivity.this.finish();
+            }
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Trace.close();
     }
 
     @Override

@@ -121,7 +121,7 @@ public class Position implements Cloneable {
 
     @Override
     public String toString() {
-        return String.format("[%s, %s] Altitude: %s , Speed: %s", latitude, longitude, altitude, speed);
+        return String.format("[%s, %s] Timestamp: %s, Altitude: %s , Speed: %s", latitude, longitude, timestamp, altitude, speed);
     }
 
     @Override
