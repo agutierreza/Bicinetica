@@ -91,17 +91,18 @@ public class RealtimeFragment extends Fragment  implements SensorEventListener {
     private LocationProvider.LocationListener recordListener = new LocationProvider.LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
-            Trace.info("Location received: %s", locationToString(location, record));
+            Trace.info("Location received!");
 
-            if (barometer != null) {
-                location.setAltitude(_altitude);
-            }
+            Trace.info("Location: '%s'", locationToString(location));
+            Trace.info("Record: '%s'", record);
 
-            Trace.debug("Location after altitude update: %s", locationToString(location, record));
-
+            //if (barometer != null) {
+            //    location.setAltitude(_altitude);
+            //}
             Position position = record.addPosition(location);
 
-            Trace.debug("Location after include record: %s", position);
+            Trace.debug("Location added to record: %s", position);
+            Trace.debug("Record: '%s'", record);
 
             if (!running) return;
 
@@ -458,11 +459,11 @@ public class RealtimeFragment extends Fragment  implements SensorEventListener {
 
     }
 
-    private static String locationToString(Location location, Record record) {
+    private static String locationToString(Location location) {
         return String.format("[%s, %s] Timestamp: %s, Altitude: %s , Speed: %s",
                 location.getLatitude(),
                 location.getLongitude(),
-                location.getTime() - record.getDate().getTime(),
+                location.getTime(),
                 location.getAltitude(),
                 location.getSpeed());
     }

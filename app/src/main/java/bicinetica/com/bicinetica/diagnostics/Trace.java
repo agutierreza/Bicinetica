@@ -11,7 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class Trace {
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss");
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
     private static Writer writer;
 
@@ -22,7 +22,7 @@ public class Trace {
             if (!log.exists()) {
                 log.createNewFile();
             }
-            writer = new FileWriter(log);
+            writer = new FileWriter(log, true);
         } catch (IOException e) {
             e.printStackTrace();
         }

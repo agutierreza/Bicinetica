@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import bicinetica.com.bicinetica.diagnostics.Trace;
+
 public class Record {
 
     private String name;
@@ -49,13 +51,21 @@ public class Record {
     }
 
     public Position addPosition(Location location) {
+        Trace.start("Record.addPosition");
         if (this.positions.isEmpty()) {
+            Trace.verbose("Position list is empty, setting start time to %s", location.getTime());
             this.date = new Date(location.getTime());
         }
         Position position = new Position((float)location.getLatitude(), (float)location.getLongitude(), (float)location.getAltitude());
         position.setSpeed(location.getSpeed());
         position.setTimestamp(location.getTime() - date.getTime());
         positions.add(position);
+        Trace.stop("Record.addPosition");
         return position;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Timestamp: %s, PositionsCount: %s", date.getTime(), positions.size());
     }
 }
