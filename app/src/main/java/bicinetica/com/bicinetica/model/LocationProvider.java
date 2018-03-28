@@ -83,7 +83,7 @@ class SystemLocationProvider extends LocationProvider {
     public void registerListener(LocationListener listener) {
         super.registerListener(listener);
         if (!listening) {
-            locationManager.requestLocationUpdates(mProvider, 0, 0, locationListener);
+            locationManager.requestLocationUpdates(mProvider, 5000, 0, locationListener);
             listening = true;
         }
     }

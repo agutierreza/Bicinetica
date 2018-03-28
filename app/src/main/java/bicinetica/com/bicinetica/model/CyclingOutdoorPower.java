@@ -23,6 +23,16 @@ public class CyclingOutdoorPower {
         return calculatePower(pos1, pos2, grade);
     }
 
+    public static float calculateSpeed(float power, float speed0, float grade){
+		double beta = Math.atan(grade);
+		float pGravity = speed0 * gForce * totalMass * (float)Math.sin(beta);
+		float pDrag = (float)Math.pow(speed0, 3) * drag;
+		float pRolling = speed0 * cRolling * gForce * totalMass * (float)Math.cos(beta);
+		float finalPower = power - (pDrag + pGravity + pRolling);
+		float formulote = (float) ((finalPower+0.5*totalMass*Math.pow(speed0,2))/(0.5*totalMass));
+		float speed = (float) Math.sqrt(Math.max(0,formulote));
+    	return speed;
+	}
 	public static float calculatePower(Position pos1, Position pos2, float grade) {
 		double beta = Math.atan(grade);
 		//Calculate power from p1.getSeconds()... p2.getSeconds()-1;
