@@ -11,10 +11,8 @@ public class Record {
     private String name;
     private Date date;
     private ArrayList<Position> positions;
-    private ArrayList<Float> totalDistances;
     public Record() {
         positions = new ArrayList<>();
-        totalDistances = new ArrayList<>();
     }
 
     public String getName() {
@@ -35,16 +33,8 @@ public class Record {
         return positions;
     }
 
-    public List<Float> getTotalDistances(){
-        return totalDistances;
-    }
-
     public Position getLastPosition() {
         return positions.isEmpty() ? null : positions.get(positions.size() - 1);
-    }
-
-    public float getTrackDistance(){
-        return totalDistances.isEmpty() ? 0 : totalDistances.get(totalDistances.size() - 1);
     }
 
     public float getDistance() {
@@ -67,16 +57,13 @@ public class Record {
         positions.add(position);
         return position;
     }
-    public Position addPosition(float latitude, float longitude, float altitude) {
-        Position position = new Position(latitude, longitude, altitude);
+
+    public Position addPosition(float latitude, float longitude, float altitude, long time) {
+        Position position = new Position(latitude, longitude, altitude, 0, time);
         positions.add(position);
         return position;
     }
 
-    public float addTotalDistance(float distance){
-        totalDistances.add(distance);
-        return distance;
-    }
     @Override
     public int hashCode() {
         int result = 42;

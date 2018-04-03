@@ -120,6 +120,11 @@ public class Position implements Cloneable {
     }
 
     @Override
+    public String toString() {
+        return String.format("[%s, %s] Timestamp: %s, Altitude: %s , Speed: %s", latitude, longitude, timestamp, altitude, speed);
+    }
+
+    @Override
     public Position clone() {
         Position p = new Position(this.latitude, this.longitude, this.altitude, this.speed, this.timestamp);
         p.power = this.power;
